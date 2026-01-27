@@ -1,74 +1,74 @@
 # CBLETest — The Ultimate Customs Broker License Exam Prep
 
-CBLETest is a premium study platform designed specifically for candidates of the US Customs Broker License Examination (CBLE). It combines learning science, spaced repetition (SM-2), and high-fidelity practice questions to ensure a first-time pass.
+CBLETest is a premium, AI-enhanced study platform designed specifically for candidates of the US Customs Broker License Examination (CBLE). It leverages advanced learning science, spaced repetition (SM-2), and high-fidelity practice questions to maximize your chances of a first-time pass.
 
 ## 🚀 Key Features
 
-- **Adaptive Study Loop**: Focus on weak areas across all 8 CBLE domains.
-- **Spaced Repetition Flashcards**: Memorize 19 CFR regulations and HTSUS rules.
-- **Real-time Readiness Analytics**: Track your progress and estimate your exam score.
-- **Exam Simulation**: Timed 80-question sessions mirroring the real CBLE.
+- **Adaptive Study Loop**: Dynamic question delivery focusing on your weak areas across all 8 CBLE domains (Classification, Valuation, Entry, Broker Duties, etc.).
+- **Spaced Repetition Flashcards**: Powered by the SM-2 algorithm to ensure long-term retention of critical 19 CFR regulations and HTSUS rules.
+- **Advanced Readiness Analytics**: Track your "Exam-Ready" score with detailed domain-level breakdowns and trending performance charts.
+- **Competitive Leaderboard**: Stay motivated by competing with a community of brokers-to-be.
+- **Timed Exam Simulations**: High-fidelity 80-question practice exams mirroring real-world CBLE conditions and timing.
+- **Customs-First Design**: A professional, dark-themed interface built for focus and long study sessions.
 
-**Use Lovable**
+## 🛠️ Technology Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Frontend**: React 18 / Vite / TypeScript
+- **Styling**: Tailwind CSS / shadcn/ui / Framer Motion
+- **Backend & Database**: Supabase (PostgreSQL, Auth, Realtime)
+- **Icons**: Lucide React
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📥 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js (v18+)
+- npm
+- Supabase Account
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. **Clone the repository**:
+   ```sh
+   git clone https://github.com/pm-81/cble.git
+   cd cble
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Install dependencies**:
+   ```sh
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. **Environment Setup**:
+   Create a `.env` file in the root directory and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. **Database Setup**:
+   Apply the migrations found in `supabase/migrations/` to your Supabase project.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+5. **Seed the Database**:
+   Run the seeding script to populate initial domains, questions, and flashcards:
+   ```sh
+   npm run seed
+   ```
 
-**Edit a file directly in GitHub**
+6. **Start the Development Server**:
+   ```sh
+   npm run dev
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📂 Project Structure
 
-**Use GitHub Codespaces**
+- `src/components/`: Reusable UI components and Layout elements.
+- `src/hooks/`: Custom React hooks for Auth and Data fetching.
+- `src/lib/`: Core libraries including Supabase client and Seeding logic.
+- `src/pages/`: Main application views (Dashboard, Study, Analytics, Leaderboard, etc.).
+- `src/types/`: TypeScript definitions and Database schemas.
+- `supabase/migrations/`: SQL migration files for database version control.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📜 License
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the MIT License - see the LICENSE file for details.
