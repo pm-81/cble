@@ -97,6 +97,19 @@ export function userRatingToSM2Quality(
 }
 
 /**
+ * Convert flashcard rating string to SM2 quality
+ */
+export function ratingToQuality(rating: 'again' | 'hard' | 'good' | 'easy'): SM2Quality {
+  switch (rating) {
+    case 'again': return 0;
+    case 'hard': return 3;
+    case 'good': return 4;
+    case 'easy': return 5;
+    default: return 3;
+  }
+}
+
+/**
  * Calculate mastery level (0-5) based on performance metrics
  */
 export function calculateMasteryLevel(
