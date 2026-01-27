@@ -9,11 +9,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CalendarDays, 
-  Clock, 
-  Target, 
-  ChevronRight, 
+import {
+  CalendarDays,
+  Clock,
+  Target,
+  ChevronRight,
   ChevronLeft,
   Loader2,
   CheckCircle2,
@@ -44,7 +44,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  
+
   // Form state
   const [examDate, setExamDate] = useState<Date | undefined>(undefined);
   const [weeklyMinutes, setWeeklyMinutes] = useState(120);
@@ -131,21 +131,21 @@ export default function Onboarding() {
             </div>
             <h2 className="font-display text-2xl font-bold mb-4">Welcome to CBLETest!</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
-              Let's set up your personalized study plan. This will take just a minute 
+              Let's set up your personalized study plan. This will take just a minute
               and help us tailor your learning experience.
             </p>
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-              <Badge variant="secondary" className="px-3 py-1">
-                160+ Practice Questions
+              <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
+                200+ Practice Questions
               </Badge>
-              <Badge variant="secondary" className="px-3 py-1">
-                Spaced Repetition
+              <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
+                Spaced Repetition SM-2
               </Badge>
-              <Badge variant="secondary" className="px-3 py-1">
-                Progress Tracking
+              <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
+                Real-time Readiness
               </Badge>
-              <Badge variant="secondary" className="px-3 py-1">
-                8 CBLE Domains
+              <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
+                All 8 CBLE Domains
               </Badge>
             </div>
           </div>
@@ -297,9 +297,8 @@ export default function Onboarding() {
             {STEPS.map((step, index) => (
               <div
                 key={step.id}
-                className={`h-2 w-8 rounded-full transition-colors ${
-                  index <= currentStep ? 'bg-primary' : 'bg-muted'
-                }`}
+                className={`h-2 w-8 rounded-full transition-colors ${index <= currentStep ? 'bg-primary' : 'bg-muted'
+                  }`}
               />
             ))}
           </div>
@@ -325,8 +324,8 @@ export default function Onboarding() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button 
-                onClick={handleComplete} 
+              <Button
+                onClick={handleComplete}
                 className="gradient-primary gap-2"
                 disabled={loading}
               >

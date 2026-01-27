@@ -1,0 +1,6 @@
+-- Disable RLS for seeding (temporary)
+ALTER TABLE public.questions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.flashcards DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.domains DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_streaks DISABLE ROW LEVEL SECURITY;

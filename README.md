@@ -1,12 +1,13 @@
-# Welcome to your Lovable project
+# CBLETest — The Ultimate Customs Broker License Exam Prep
 
-## Project info
+CBLETest is a premium study platform designed specifically for candidates of the US Customs Broker License Examination (CBLE). It combines learning science, spaced repetition (SM-2), and high-fidelity practice questions to ensure a first-time pass.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Key Features
 
-## How can I edit this code?
-
-There are several ways of editing your application.
+- **Adaptive Study Loop**: Focus on weak areas across all 8 CBLE domains.
+- **Spaced Repetition Flashcards**: Memorize 19 CFR regulations and HTSUS rules.
+- **Real-time Readiness Analytics**: Track your progress and estimate your exam score.
+- **Exam Simulation**: Timed 80-question sessions mirroring the real CBLE.
 
 **Use Lovable**
 

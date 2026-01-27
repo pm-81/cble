@@ -13,6 +13,8 @@ import Study from "./pages/Study";
 import Flashcards from "./pages/Flashcards";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import Pricing from "./pages/Pricing";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,7 +44,9 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+
             {/* Protected Routes */}
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -50,7 +54,7 @@ const App = () => (
             <Route path="/flashcards" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>

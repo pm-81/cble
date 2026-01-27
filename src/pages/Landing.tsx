@@ -80,22 +80,22 @@ export default function Landing() {
 
             {/* Headline */}
             <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Ace Your <span className="text-gradient-primary">Customs Broker</span>{' '}
-              License Exam
+              Pass Your <span className="text-gradient-primary">Customs Broker</span><br />
+              License Exam with <span className="text-primary">CBLETest</span>
             </h1>
 
             {/* Subheadline */}
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Master the US Customs Broker License Exam (CBLE) with the ultimate prep tool.
-              Our 2026 study guide combines adaptive practice tests, spaced-repetition flashcards,
-              and real-world 19 CFR case scenarios to ensure you pass on your first try.
+              The most advanced study platform for the US Customs Broker License Exam.
+              Master 19 CFR regulations, HTSUS classification, and valuation rules with
+              adaptive practice tests and spaced-repetition flashcards.
             </p>
 
             {/* CTAs */}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild className="gradient-primary shadow-glow">
                 <Link to="/auth?mode=signup" className="gap-2">
-                  Start Free Trial
+                  Start Your Free Trial
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -108,15 +108,15 @@ export default function Landing() {
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
-                160+ Practice Questions
+                200+ Practice Questions
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
-                All 8 Exam Domains
+                Updated for 2026 Exam
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
-                CFR Reference Cues
+                Detailed CFR Rationales
               </div>
             </div>
           </div>
@@ -256,6 +256,47 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FAQ Section (SEO) */}
+      <section className="bg-muted/30 py-20 md:py-28">
+        <div className="container max-w-4xl">
+          <h2 className="font-display text-3xl font-bold sm:text-4xl text-center mb-12">
+            Frequently Asked Questions
+          </h2>
+          <div className="grid gap-6">
+            <div className="rounded-xl border bg-card p-6">
+              <h3 className="font-semibold text-lg mb-2">How do I pass the US Customs Broker License Exam (CBLE)?</h3>
+              <p className="text-muted-foreground text-sm">
+                Passing the CBLE requires mastery of the 19 CFR regulations and the HTSUS. CBLETest uses spaced repetition
+                and adaptive practice tests to help you memorize key legal definitions and classification rules efficiently.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-card p-6">
+              <h3 className="font-semibold text-lg mb-2">What is the best way to study HTSUS classification?</h3>
+              <p className="text-muted-foreground text-sm">
+                The best way is through repetitive practice with the General Rules of Interpretation (GRIs). Our platform
+                provides hundreds of HTSUS classification practice questions with detailed rationales to help you
+                understand the logic behind every heading and subheading.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-card p-6">
+              <h3 className="font-semibold text-lg mb-2">Are the practice questions updated for the 2026 exam?</h3>
+              <p className="text-muted-foreground text-sm">
+                Yes, CBLETest stays updated with the latest CBP directives and 19 CFR changes. Our question bank is
+                specifically tailored for the 2026 Customs Broker License Exam cycles.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-card p-6">
+              <h3 className="font-semibold text-lg mb-2">What 19 CFR domains are covered on the exam?</h3>
+              <p className="text-muted-foreground text-sm">
+                The exam covers 8 major domains: Entry/Entry Summary, Classification, Valuation, Trade Programs,
+                Broker Duties (19 CFR 111), Marking (19 CFR 134), Drawback, and more. CBLETest provides comprehensive
+                coverage and analytics for all these domains.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 md:py-28">
         <div className="container">
@@ -266,7 +307,7 @@ export default function Landing() {
                 Ready to Pass the CBLE?
               </h2>
               <p className="mt-4 text-primary-foreground/80">
-                Join thousands of candidates using science-backed study methods to ace their exam.
+                Join thousands of candidates using science-backed study methods to ace their customs broker license exam.
               </p>
               <Button
                 size="lg"
@@ -275,7 +316,7 @@ export default function Landing() {
                 className="mt-8 bg-white text-primary hover:bg-white/90"
               >
                 <Link to="/auth?mode=signup" className="gap-2">
-                  Get Started Free
+                  Start Your Free Trial
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

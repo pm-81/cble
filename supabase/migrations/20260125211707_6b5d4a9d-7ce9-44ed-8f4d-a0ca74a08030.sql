@@ -253,12 +253,18 @@ CREATE POLICY "Users can update their own profile" ON public.profiles
 CREATE POLICY "Users can insert their own profile" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+CREATE POLICY "Anyone can insert profiles" ON public.profiles
+    FOR INSERT WITH CHECK (true);
+
 -- Domains policies (public read)
 CREATE POLICY "Anyone can view domains" ON public.domains
     FOR SELECT USING (true);
 
 CREATE POLICY "Admins can manage domains" ON public.domains
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Anyone can insert domains" ON public.domains
+    FOR INSERT WITH CHECK (true);
 
 -- Topics policies (public read)
 CREATE POLICY "Anyone can view topics" ON public.topics
@@ -274,12 +280,18 @@ CREATE POLICY "Authenticated users can view active questions" ON public.question
 CREATE POLICY "Admins can manage all questions" ON public.questions
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));
 
+CREATE POLICY "Anyone can insert questions" ON public.questions
+    FOR INSERT WITH CHECK (true);
+
 -- Flashcards policies (authenticated read)
 CREATE POLICY "Authenticated users can view active flashcards" ON public.flashcards
     FOR SELECT TO authenticated USING (is_active = true);
 
 CREATE POLICY "Admins can manage all flashcards" ON public.flashcards
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Anyone can insert flashcards" ON public.flashcards
+    FOR INSERT WITH CHECK (true);
 
 -- Question attempts policies (user own data)
 CREATE POLICY "Users can view their own attempts" ON public.question_attempts
@@ -329,6 +341,9 @@ CREATE POLICY "Users can view their own streaks" ON public.user_streaks
 
 CREATE POLICY "Users can manage their own streaks" ON public.user_streaks
     FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can insert streaks" ON public.user_streaks
+    FOR INSERT WITH CHECK (true);
 
 -- Domain confidence policies (user own data)
 CREATE POLICY "Users can view their own confidence" ON public.domain_confidence

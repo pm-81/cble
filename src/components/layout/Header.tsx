@@ -18,7 +18,9 @@ import {
   User,
   Flame,
   Menu,
-  X
+  X,
+  Trophy,
+  CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -37,7 +39,12 @@ export function Header() {
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Study', href: '/study', icon: BookOpen },
     { label: 'Analytics', href: '/analytics', icon: Flame },
-  ] : [];
+    { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+    { label: 'Pricing', href: '/pricing', icon: CreditCard },
+  ] : [
+    { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+    { label: 'Pricing', href: '/pricing', icon: CreditCard },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

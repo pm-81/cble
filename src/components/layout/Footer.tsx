@@ -24,28 +24,39 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="mb-4 font-semibold">Quick Links</h4>
+            <h4 className="mb-4 font-semibold">Study Tools</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/study" className="hover:text-foreground transition-colors">
-                  Practice Questions
+                <Link to="/study?mode=quick_drill" className="hover:text-foreground transition-colors">
+                  HTSUS Practice Questions
                 </Link>
               </li>
               <li>
-                <Link to="/study?mode=flashcards" className="hover:text-foreground transition-colors">
-                  Flashcards
+                <Link to="/flashcards" className="hover:text-foreground transition-colors">
+                  19 CFR Flashcards
                 </Link>
               </li>
               <li>
-                <Link to="/study?mode=exam" className="hover:text-foreground transition-colors">
-                  Exam Simulation
+                <Link to="/study?mode=exam_simulation" className="hover:text-foreground transition-colors">
+                  CBLE Exam Blueprint
                 </Link>
               </li>
               <li>
-                <Link to="/resources" className="hover:text-foreground transition-colors">
-                  Study Resources
+                <Link to="/analytics" className="hover:text-foreground transition-colors">
+                  Exam Readiness Score
                 </Link>
               </li>
+            </ul>
+          </div>
+
+          {/* Domains */}
+          <div>
+            <h4 className="mb-4 font-semibold">CBLE Domains</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="hover:text-foreground cursor-default">Customs Valuation</li>
+              <li className="hover:text-foreground cursor-default">Broker Compliance</li>
+              <li className="hover:text-foreground cursor-default">Trade Agreements</li>
+              <li className="hover:text-foreground cursor-default">Liquidation & Protests</li>
             </ul>
           </div>
 

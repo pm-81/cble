@@ -67,7 +67,10 @@ export default function Flashcards() {
         // Fetch flashcards due for review
         const { data: flashcardsData, error: flashcardsError } = await supabase
           .from('flashcards')
-          .select('*')
+          .select(`
+            *,
+            domains (name)
+          `)
           .eq('is_active', true)
           .limit(20);
 
@@ -295,7 +298,7 @@ export default function Flashcards() {
           onClick={handleFlip}
         >
           <div
-            className={`relative transition-transform duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''
+            className={`relative transition-all duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''
               }`}
             style={{
               transformStyle: 'preserve-3d',
@@ -304,36 +307,43 @@ export default function Flashcards() {
           >
             {/* Front */}
             <Card
-              className={`min-h-[300px] ${isFlipped ? 'invisible' : 'visible'}`}
+              className={`min-h-[350px] shadow-xl border-none ${isFlipped ? 'invisible' : 'visible'}`}
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center bg-card">
-                <p className="text-2xl font-semibold leading-relaxed tracking-tight">
+              <CardContent className="flex flex-col items-center justify-center min-h-[350px] p-10 text-center bg-gradient-to-br from-card to-muted/20">
+                <Badge variant="outline" className="mb-6 px-3 py-1 bg-primary/5 text-primary border-primary/20 uppercase tracking-widest text-[10px] font-bold">
+                  {(currentCard as any)?.domains?.name || 'General Knowledge'}
+                </Badge>
+                <p className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
                   {currentCard?.front}
                 </p>
-                <div className="text-xs text-muted-foreground mt-8 flex flex-col items-center gap-2 uppercase tracking-widest font-bold">
-                  <Eye className="h-4 w-4" />
-                  Tap to Reveal Answer
+                <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 opacity-40 group">
+                  <RotateCcw className="h-4 w-4 animate-spin-slow" />
+                  <span className="text-[10px] uppercase font-bold tracking-widest">Click to reveal answer</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Back */}
             <Card
-              className={`min-h-[300px] absolute top-0 left-0 w-full ${isFlipped ? 'visible' : 'invisible'}`}
+              className={`min-h-[350px] shadow-xl border-none absolute top-0 left-0 w-full ${isFlipped ? 'visible' : 'invisible'}`}
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)'
               }}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center bg-accent/5">
-                <p className="text-xl font-medium leading-relaxed">
+              <CardContent className="flex flex-col items-center justify-center min-h-[350px] p-10 text-center bg-gradient-to-tr from-primary/5 to-card">
+                <Badge variant="outline" className="absolute top-6 right-6 px-3 py-1 bg-primary text-primary-foreground border-none font-bold text-[10px]">
+                  ANSWER
+                </Badge>
+                <p className="text-xl font-medium leading-relaxed text-foreground/90 sm:text-2xl">
                   {currentCard?.back}
                 </p>
                 {currentCard?.reference_cue && (
-                  <Badge variant="secondary" className="mt-8 px-4 py-1 font-mono text-xs uppercase tracking-wider">
+                  <div className="mt-8 flex items-center gap-2 px-4 py-2 rounded-lg bg-muted border font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                    <BookOpen className="h-3 w-3" />
                     {currentCard.reference_cue}
-                  </Badge>
+                  </div>
                 )}
               </CardContent>
             </Card>
