@@ -129,7 +129,7 @@ export default function Onboarding() {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full gradient-primary">
               <Sparkles className="h-10 w-10 text-primary-foreground" />
             </div>
-            <h2 className="font-display text-2xl font-bold mb-4">Welcome to CBLE Prep!</h2>
+            <h2 className="font-display text-2xl font-bold mb-4">Welcome to CBLETest!</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
               Let's set up your personalized study plan. This will take just a minute 
               and help us tailor your learning experience.

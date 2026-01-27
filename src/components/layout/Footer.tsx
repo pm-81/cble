@@ -13,11 +13,11 @@ export function Footer() {
                 <BookOpen className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-display text-lg font-bold">
-                CBLE<span className="text-primary">Prep</span>
+                CBLE<span className="text-primary">Test</span>
               </span>
             </Link>
             <p className="mt-4 max-w-md text-sm text-muted-foreground">
-              Master the Customs Broker License Exam with adaptive learning, spaced repetition, 
+              Master the Customs Broker License Exam with adaptive learning, spaced repetition,
               and comprehensive practice. Built on learning science principles.
             </p>
           </div>
@@ -75,7 +75,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t pt-8 md:flex-row">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} CBLEPrep. All rights reserved.
+            © {new Date().getFullYear()} CBLETest. All rights reserved.
           </p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             Made with <Heart className="h-3 w-3 text-destructive" /> for customs broker candidates
@@ -85,8 +85,8 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-6 rounded-lg bg-muted/50 p-4">
           <p className="text-xs text-muted-foreground text-center">
-            <strong>Disclaimer:</strong> This is an educational study tool only. It is not affiliated with 
-            U.S. Customs and Border Protection (CBP) or the Treasury Department. Always refer to official 
+            <strong>Disclaimer:</strong> This is an educational study tool only. It is not affiliated with
+            U.S. Customs and Border Protection (CBP) or the Treasury Department. Always refer to official
             CBP publications and the current Code of Federal Regulations for authoritative information.
           </p>
         </div>

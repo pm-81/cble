@@ -11,9 +11,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Loader2, 
-  ChevronRight, 
+import {
+  Loader2,
+  ChevronRight,
   ChevronLeft,
   CheckCircle2,
   XCircle,
@@ -55,6 +55,7 @@ export default function Study() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') || 'quick_drill';
+  const isExamMode = mode === 'exam_simulation';
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -75,7 +76,7 @@ export default function Study() {
 
       try {
         const limit = mode === '2min' ? 5 : mode === 'exam_simulation' ? 80 : 20;
-        
+
         // Fetch random questions
         const { data, error } = await supabase
           .from('questions')
@@ -88,7 +89,7 @@ export default function Study() {
         // Shuffle questions
         const shuffled = (data || []).sort(() => Math.random() - 0.5);
         setQuestions(shuffled);
-        
+
         // Initialize states
         const states = new Map<string, QuestionState>();
         shuffled.forEach(q => {
@@ -117,7 +118,7 @@ export default function Study() {
 
   const handleAnswerSelect = (answer: AnswerChoice) => {
     if (!currentQuestion || currentState?.isSubmitted) return;
-    
+
     setQuestionStates(prev => {
       const updated = new Map(prev);
       updated.set(currentQuestion.id, {
@@ -180,7 +181,7 @@ export default function Study() {
 
   const handleConfidenceChange = (value: number[]) => {
     if (!currentQuestion || currentState?.isSubmitted) return;
-    
+
     setQuestionStates(prev => {
       const updated = new Map(prev);
       updated.set(currentQuestion.id, {
@@ -193,7 +194,7 @@ export default function Study() {
 
   const handleLuckyGuessToggle = (checked: boolean) => {
     if (!currentQuestion || currentState?.isSubmitted) return;
-    
+
     setQuestionStates(prev => {
       const updated = new Map(prev);
       updated.set(currentQuestion.id, {
@@ -242,7 +243,7 @@ export default function Study() {
 
   if (sessionComplete) {
     const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
-    
+
     return (
       <Layout showFooter={false}>
         <div className="container max-w-2xl py-12">
@@ -253,7 +254,7 @@ export default function Study() {
               </div>
               <h2 className="font-display text-2xl font-bold">Session Complete!</h2>
               <p className="mt-2 text-muted-foreground">Great work on your practice session.</p>
-              
+
               <div className="mt-8 grid grid-cols-3 gap-4">
                 <div className="rounded-lg bg-muted p-4">
                   <p className="text-2xl font-bold text-primary">{answeredCount}</p>
@@ -276,7 +277,7 @@ export default function Study() {
                     Dashboard
                   </a>
                 </Button>
-                <Button 
+                <Button
                   className="gradient-primary gap-2"
                   onClick={() => window.location.reload()}
                 >
@@ -325,8 +326,8 @@ export default function Study() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <RadioGroup 
-              value={currentState?.selectedAnswer || ''} 
+            <RadioGroup
+              value={currentState?.selectedAnswer || ''}
               onValueChange={(v) => handleAnswerSelect(v as AnswerChoice)}
               className="space-y-3"
             >
@@ -335,7 +336,7 @@ export default function Study() {
                 const optionText = currentQuestion?.[optionKey] as string;
                 const isSelected = currentState?.selectedAnswer === letter;
                 const isCorrectAnswer = letter === currentQuestion?.correct_answer;
-                const showResult = currentState?.isSubmitted;
+                const showResult = currentState?.isSubmitted && !isExamMode;
 
                 let bgClass = '';
                 if (showResult && isCorrectAnswer) {
@@ -352,8 +353,8 @@ export default function Study() {
                       htmlFor={`option-${letter}`}
                       className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-all hover:bg-muted/50 ${bgClass} ${currentState?.isSubmitted ? 'cursor-default' : ''}`}
                     >
-                      <RadioGroupItem 
-                        value={letter} 
+                      <RadioGroupItem
+                        value={letter}
                         id={`option-${letter}`}
                         disabled={currentState?.isSubmitted}
                         className="mt-0.5"
@@ -405,8 +406,8 @@ export default function Study() {
               </div>
             )}
 
-            {/* Rationale (after submit) */}
-            {currentState?.isSubmitted && currentQuestion?.rationale && (
+            {/* Rationale (after submit) - hidden in exam mode */}
+            {currentState?.isSubmitted && !isExamMode && currentQuestion?.rationale && (
               <div className={`mt-6 rounded-lg p-4 ${isCorrect ? 'bg-success/10' : 'bg-muted'}`}>
                 <div className="flex items-start gap-3">
                   <Lightbulb className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -424,8 +425,8 @@ export default function Study() {
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handlePrevious}
             disabled={currentIndex === 0}
             className="gap-2"

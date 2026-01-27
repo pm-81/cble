@@ -17,7 +17,7 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, signIn, signUp, loading } = useAuth();
-  
+
   const [activeTab, setActiveTab] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,13 +49,13 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
     const { error } = await signIn(email, password);
     setIsSubmitting(false);
-    
+
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         setError('Invalid email or password. Please try again.');
@@ -68,13 +68,13 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
     const { error } = await signUp(email, password, displayName);
     setIsSubmitting(false);
-    
+
     if (error) {
       if (error.message.includes('already registered')) {
         setError('This email is already registered. Please sign in instead.');
@@ -99,7 +99,7 @@ export default function Auth() {
     <div className="flex min-h-screen flex-col">
       {/* Background */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-      
+
       {/* Header */}
       <header className="container py-6">
         <Link to="/" className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export default function Auth() {
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="font-display text-xl font-bold">
-            CBLE<span className="text-primary">Prep</span>
+            CBLE<span className="text-primary">Test</span>
           </span>
         </Link>
       </header>
@@ -120,7 +120,7 @@ export default function Auth() {
               {activeTab === 'signin' ? 'Welcome Back' : 'Create Account'}
             </CardTitle>
             <CardDescription>
-              {activeTab === 'signin' 
+              {activeTab === 'signin'
                 ? 'Sign in to continue your exam preparation'
                 : 'Start your journey to passing the CBLE'
               }
@@ -132,14 +132,14 @@ export default function Auth() {
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
-              
+
               {error && (
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               {success && (
                 <Alert className="mt-4 border-success bg-success/10">
                   <AlertDescription className="text-success">{success}</AlertDescription>
@@ -172,9 +172,9 @@ export default function Auth() {
                       autoComplete="current-password"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full gradient-primary" 
+                  <Button
+                    type="submit"
+                    className="w-full gradient-primary"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -227,9 +227,9 @@ export default function Auth() {
                       minLength={6}
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full gradient-primary" 
+                  <Button
+                    type="submit"
+                    className="w-full gradient-primary"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (

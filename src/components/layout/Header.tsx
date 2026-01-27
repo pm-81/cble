@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  BookOpen, 
-  LayoutDashboard, 
-  Settings, 
-  LogOut, 
+import {
+  BookOpen,
+  LayoutDashboard,
+  Settings,
+  LogOut,
   User,
   Flame,
   Menu,
@@ -48,7 +48,7 @@ export function Header() {
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="hidden font-display text-xl font-bold sm:inline-block">
-            CBLE<span className="text-primary">Prep</span>
+            CBLE<span className="text-primary">Test</span>
           </span>
         </Link>
 

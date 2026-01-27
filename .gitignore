@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+test.ts
+*.bak
+dev_server.log
 
 # Editor directories and files
 .vscode/*

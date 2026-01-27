@@ -6,12 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Flame, 
-  Target, 
-  Clock, 
-  Brain, 
-  TrendingUp, 
+import {
+  Flame,
+  Target,
+  Clock,
+  Brain,
+  TrendingUp,
   Play,
   Calendar,
   Loader2,
@@ -56,7 +56,7 @@ export default function Dashboard() {
 
       try {
         const today = new Date().toISOString().split('T')[0];
-        
+
         // Fetch profile
         const { data: profile } = await supabase
           .from('profiles')
@@ -121,7 +121,7 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  const daysUntilExam = data?.profile?.exam_date 
+  const daysUntilExam = data?.profile?.exam_date
     ? Math.ceil((new Date(data.profile.exam_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
@@ -240,12 +240,12 @@ export default function Dashboard() {
                     </div>
                     <h3 className="font-semibold">Quick Drill</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Adaptive practice focusing on weak areas
+                      Adaptive practice tests focusing on weak 19 CFR domains and HTSUS classification.
                     </p>
                   </div>
                 </Link>
 
-                <Link to="/study?mode=flashcards" className="block">
+                <Link to="/flashcards" className="block">
                   <div className="group rounded-xl border p-4 transition-all hover:border-primary hover:shadow-md">
                     <div className="mb-3 flex items-center justify-between">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
@@ -255,7 +255,7 @@ export default function Dashboard() {
                     </div>
                     <h3 className="font-semibold">Flashcard Review</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Spaced repetition for key concepts
+                      Spaced repetition for customs definitions and legal key terms.
                     </p>
                   </div>
                 </Link>
@@ -270,7 +270,7 @@ export default function Dashboard() {
                     </div>
                     <h3 className="font-semibold">Mixed Review</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Interleaved practice across all domains
+                      Interleaved practice across all 8 Customs Broker Exam domains.
                     </p>
                   </div>
                 </Link>
@@ -285,7 +285,7 @@ export default function Dashboard() {
                     </div>
                     <h3 className="font-semibold">Exam Simulation</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Timed 80-question practice test
+                      Timed 80-question CBLE simulation mirroring real exam conditions.
                     </p>
                   </div>
                 </Link>

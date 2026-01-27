@@ -20,33 +20,33 @@ import {
 const features = [
   {
     icon: Brain,
-    title: 'Adaptive Learning',
-    description: 'Questions adapt to your skill level, focusing on weak areas to maximize improvement.',
+    title: 'Adaptive Practice Tests',
+    description: 'Our questions adapt to your performance, focusing on high-weight CFR domains where you need the most improvement.',
   },
   {
     icon: Clock,
-    title: 'Spaced Repetition',
-    description: 'Scientifically-proven scheduling ensures you review at optimal intervals for retention.',
+    title: 'Anki-Style Spaced Repetition',
+    description: 'Scientifically-proven algorithm ensures you review customs definitions and HTSUS rules at optimal intervals.',
   },
   {
     icon: Target,
-    title: '160+ Practice Questions',
-    description: 'Comprehensive question bank covering all 8 CBLE exam domains with detailed rationales.',
+    title: 'CBLE Practice Questions 2026',
+    description: 'Comprehensive question bank covering all 8 domains with detailed legal rationales based on current CBP regulations.',
   },
   {
     icon: BarChart3,
-    title: 'Progress Analytics',
-    description: 'Track mastery by domain, identify patterns, and monitor your exam readiness.',
+    title: 'Exam Readiness Analytics',
+    description: 'Track mastery by 19 CFR part, identify patterns, and monitor your probability of passing the actual license exam.',
   },
   {
     icon: Zap,
-    title: '2-Minute Save Mode',
-    description: 'Ultra-short sessions for busy days that still advance your study plan.',
+    title: 'Quick Drill Mode',
+    description: '5-minute micro-sessions designed for busy schedules, covering high-frequency exam topics like Valuation and Entry.',
   },
   {
     icon: Shield,
-    title: 'Exam Simulation',
-    description: 'Timed 80-question blocks that mirror the real exam experience.',
+    title: 'Realistic Exam Simulators',
+    description: 'Timed 80-question simulations that mirror the official US Customs Broker License Exam environment.',
   },
 ];
 
@@ -55,10 +55,10 @@ const domains = [
   'Classification (HTSUS / GRIs / Notes)',
   'Valuation (19 CFR 152)',
   'Trade Programs / Origin',
-  'Broker Duties / POA / Records / Bonds',
+  'Broker Duties / POA / Records / Bonds (19 CFR 111)',
   'Marking / COO (19 CFR 134)',
   'Protests / Liquidation',
-  'FTZ / Drawback / In-bond / AD/CVD',
+  'FTZ / Drawback / In-bond / AD/CVD / PGA',
 ];
 
 export default function Landing() {
@@ -69,7 +69,7 @@ export default function Landing() {
         {/* Background gradient */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 via-background to-background" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-        
+
         <div className="container py-20 md:py-32">
           <div className="mx-auto max-w-4xl text-center">
             {/* Badge */}
@@ -77,20 +77,20 @@ export default function Landing() {
               <Sparkles className="h-4 w-4" />
               Science-backed exam preparation
             </div>
-            
+
             {/* Headline */}
             <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Pass the{' '}
-              <span className="text-gradient-primary">Customs Broker</span>{' '}
-              Exam with Confidence
+              Ace Your <span className="text-gradient-primary">Customs Broker</span>{' '}
+              License Exam
             </h1>
-            
+
             {/* Subheadline */}
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Master the CBLE through adaptive practice, spaced repetition, and intelligent study 
-              scheduling. Join candidates who've transformed their preparation.
+              Master the US Customs Broker License Exam (CBLE) with the ultimate prep tool.
+              Our 2026 study guide combines adaptive practice tests, spaced-repetition flashcards,
+              and real-world 19 CFR case scenarios to ensure you pass on your first try.
             </p>
-            
+
             {/* CTAs */}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild className="gradient-primary shadow-glow">
@@ -103,7 +103,7 @@ export default function Landing() {
                 <Link to="/auth">Sign In</Link>
               </Button>
             </div>
-            
+
             {/* Social proof */}
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -131,10 +131,11 @@ export default function Landing() {
               Everything You Need to Succeed
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Built on learning science principles to maximize your study efficiency and exam readiness.
+              Built on learning science and cognitive psychology principles (SM-2 Spaced Repetition)
+              to maximize your study efficiency and exam readiness for the 19 CFR regulations.
             </p>
           </div>
-          
+
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <Card key={index} className="group relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
@@ -160,10 +161,12 @@ export default function Landing() {
                 Comprehensive Coverage of All Exam Topics
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Our question bank spans all 8 domains tested on the CBLE, each with detailed 
-                rationales and CFR/HTSUS reference cues to help you look up the rules quickly.
+                Our comprehensive question bank spans all 8 domains tested on the CBLE, including
+                Broker Duties (19 CFR 111), Entry Requirements (19 CFR 141-142), and Valuation (19 CFR 152).
+                Each question includes detailed rationales and HTSUS reference cues to help you master
+                legal definitions quickly.
               </p>
-              
+
               <div className="mt-8 space-y-3">
                 {domains.map((domain, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
@@ -175,7 +178,7 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            
+
             <div className="relative">
               <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 p-8 md:p-12">
                 <div className="h-full w-full rounded-2xl bg-card shadow-xl p-6 flex flex-col justify-center">
@@ -191,8 +194,8 @@ export default function Landing() {
                       {[78, 65, 82, 70, 75, 60, 85, 68].map((val, i) => (
                         <div key={i} className="text-center">
                           <div className="mx-auto h-16 w-2 rounded-full bg-muted overflow-hidden">
-                            <div 
-                              className="w-full rounded-full gradient-primary transition-all" 
+                            <div
+                              className="w-full rounded-full gradient-primary transition-all"
                               style={{ height: `${val}%`, marginTop: `${100 - val}%` }}
                             />
                           </div>
@@ -219,7 +222,7 @@ export default function Landing() {
               Our streamlined onboarding gets you to practice questions fast.
             </p>
           </div>
-          
+
           <div className="mt-16 grid gap-8 md:grid-cols-3">
             {[
               {
@@ -265,10 +268,10 @@ export default function Landing() {
               <p className="mt-4 text-primary-foreground/80">
                 Join thousands of candidates using science-backed study methods to ace their exam.
               </p>
-              <Button 
-                size="lg" 
-                variant="secondary" 
-                asChild 
+              <Button
+                size="lg"
+                variant="secondary"
+                asChild
                 className="mt-8 bg-white text-primary hover:bg-white/90"
               >
                 <Link to="/auth?mode=signup" className="gap-2">

@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Loader2, 
-  RotateCcw, 
+import {
+  Loader2,
+  RotateCcw,
   Home,
   BookOpen,
   ChevronLeft,
@@ -97,12 +97,12 @@ export default function Flashcards() {
         const sortedFlashcards = (flashcardsData || []).sort((a, b) => {
           const progressA = progressMap.get(a.id);
           const progressB = progressMap.get(b.id);
-          
+
           // New cards (no progress) come after due cards
           if (!progressA && progressB) return 1;
           if (progressA && !progressB) return -1;
           if (!progressA && !progressB) return 0;
-          
+
           // Sort by due date
           return new Date(progressA!.due_date).getTime() - new Date(progressB!.due_date).getTime();
         });
@@ -240,7 +240,7 @@ export default function Flashcards() {
               <p className="mt-2 text-muted-foreground">
                 Great work reviewing your flashcards.
               </p>
-              
+
               <div className="mt-8 grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-muted p-4">
                   <p className="text-2xl font-bold text-primary">{reviewed.size}</p>
@@ -259,7 +259,7 @@ export default function Flashcards() {
                     Dashboard
                   </a>
                 </Button>
-                <Button 
+                <Button
                   className="gradient-primary gap-2"
                   onClick={() => window.location.reload()}
                 >
@@ -290,51 +290,48 @@ export default function Flashcards() {
         </div>
 
         {/* Flashcard */}
-        <div 
+        <div
           className="perspective-1000 cursor-pointer mb-6"
           onClick={handleFlip}
         >
-          <div 
-            className={`relative transition-transform duration-500 transform-style-3d ${
-              isFlipped ? 'rotate-y-180' : ''
-            }`}
-            style={{ 
+          <div
+            className={`relative transition-transform duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''
+              }`}
+            style={{
               transformStyle: 'preserve-3d',
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
             }}
           >
             {/* Front */}
-            <Card 
+            <Card
               className={`min-h-[300px] ${isFlipped ? 'invisible' : 'visible'}`}
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
-                <Badge variant="outline" className="mb-4">Question</Badge>
-                <p className="text-lg font-medium leading-relaxed">
+              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center bg-card">
+                <p className="text-2xl font-semibold leading-relaxed tracking-tight">
                   {currentCard?.front}
                 </p>
-                <p className="text-sm text-muted-foreground mt-6 flex items-center gap-2">
+                <div className="text-xs text-muted-foreground mt-8 flex flex-col items-center gap-2 uppercase tracking-widest font-bold">
                   <Eye className="h-4 w-4" />
-                  Click to reveal answer
-                </p>
+                  Tap to Reveal Answer
+                </div>
               </CardContent>
             </Card>
 
             {/* Back */}
-            <Card 
+            <Card
               className={`min-h-[300px] absolute top-0 left-0 w-full ${isFlipped ? 'visible' : 'invisible'}`}
-              style={{ 
+              style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)'
               }}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
-                <Badge variant="secondary" className="mb-4">Answer</Badge>
-                <p className="text-lg font-medium leading-relaxed">
+              <CardContent className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center bg-accent/5">
+                <p className="text-xl font-medium leading-relaxed">
                   {currentCard?.back}
                 </p>
                 {currentCard?.reference_cue && (
-                  <Badge variant="outline" className="mt-4">
+                  <Badge variant="secondary" className="mt-8 px-4 py-1 font-mono text-xs uppercase tracking-wider">
                     {currentCard.reference_cue}
                   </Badge>
                 )}
@@ -346,8 +343,8 @@ export default function Flashcards() {
         {/* Rating Buttons (shown when flipped) */}
         {isFlipped && (
           <div className="grid grid-cols-4 gap-2 mb-6">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-col h-auto py-3 border-destructive/50 hover:bg-destructive/10"
               onClick={() => handleRating('again')}
             >
@@ -355,8 +352,8 @@ export default function Flashcards() {
               <span className="text-xs">Again</span>
               <span className="text-[10px] text-muted-foreground">&lt;1 min</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-col h-auto py-3 border-warning/50 hover:bg-warning/10"
               onClick={() => handleRating('hard')}
             >
@@ -366,8 +363,8 @@ export default function Flashcards() {
                 {currentProgress ? Math.max(1, Math.round(currentProgress.interval_days * 0.8)) : 1}d
               </span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-col h-auto py-3 border-success/50 hover:bg-success/10"
               onClick={() => handleRating('good')}
             >
@@ -377,8 +374,8 @@ export default function Flashcards() {
                 {currentProgress ? currentProgress.interval_days : 1}d
               </span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-col h-auto py-3 border-primary/50 hover:bg-primary/10"
               onClick={() => handleRating('easy')}
             >
@@ -393,8 +390,8 @@ export default function Flashcards() {
 
         {/* Navigation */}
         <div className="flex items-center justify-between">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handlePrevious}
             disabled={currentIndex === 0}
             className="gap-2"
@@ -403,7 +400,7 @@ export default function Flashcards() {
             Previous
           </Button>
 
-          <Button 
+          <Button
             variant="outline"
             onClick={handleFlip}
             className="gap-2"
@@ -412,8 +409,8 @@ export default function Flashcards() {
             {isFlipped ? 'Hide' : 'Show'} Answer
           </Button>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleNext}
             disabled={currentIndex === flashcards.length - 1}
             className="gap-2"
