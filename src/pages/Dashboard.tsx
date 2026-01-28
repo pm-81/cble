@@ -6,6 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { ExamReadinessScore } from '@/components/ExamReadinessScore';
+import { LevelProgress } from '@/components/Gamification/LevelProgress';
+import { AchievementsList } from '@/components/Gamification/AchievementsList';
 import {
   Flame,
   Target,
@@ -18,7 +21,8 @@ import {
   Zap,
   BookOpen,
   BarChart3,
-  CheckCircle2
+  CheckCircle2,
+  Database
 } from 'lucide-react';
 
 interface DashboardData {
@@ -36,6 +40,7 @@ interface DashboardData {
   correctToday: number;
   totalAttempts: number;
   totalCorrect: number;
+  strongestDomain: string | null;
 }
 
 export default function Dashboard() {
@@ -87,20 +92,58 @@ export default function Dashboard() {
         // Fetch all-time attempts
         const { data: allAttempts } = await supabase
           .from('question_attempts')
-          .select('is_correct')
+          .select('is_correct, domain_id')
           .eq('user_id', user.id);
 
+        // Calculate strongest domain
+        const domainPerformance = new Map<string, { correct: number, total: number }>();
+        allAttempts?.forEach(a => {
+          if (a.domain_id) {
+            const curr = domainPerformance.get(a.domain_id) || { correct: 0, total: 0 };
+            domainPerformance.set(a.domain_id, {
+              correct: curr.correct + (a.is_correct ? 1 : 0),
+              total: curr.total + 1
+            });
+          }
+        });
+
+        let strongestDomain = null;
+        let maxAccuracy = -1;
+
+        // Only consider domains with at least 5 attempts
+        domainPerformance.forEach((stats, domainId) => {
+          if (stats.total >= 5) {
+            const acc = stats.correct / stats.total;
+            if (acc > maxAccuracy) {
+              maxAccuracy = acc;
+              strongestDomain = domainId; // Ideally we'd map this to a name, but ID works for a boolean check in achievements 
+            }
+          }
+        });
+
         setData({
-          profile,
-          streak,
+          profile: profile || null,
+          streak: streak || null,
           questionsCount: questionsCount || 0,
           attemptsToday: todayAttempts?.length || 0,
           correctToday: todayAttempts?.filter(a => a.is_correct).length || 0,
           totalAttempts: allAttempts?.length || 0,
           totalCorrect: allAttempts?.filter(a => a.is_correct).length || 0,
+          strongestDomain,
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        // Set basic data even on error to prevent crash
+        setData({
+          profile: null,
+          streak: null,
+          questionsCount: 0,
+          attemptsToday: 0,
+          correctToday: 0,
+          totalAttempts: 0,
+          totalCorrect: 0,
+          strongestDomain: null,
+        });
       } finally {
         setLoading(false);
       }
@@ -136,6 +179,31 @@ export default function Dashboard() {
   return (
     <Layout showFooter={false}>
       <div className="container py-8">
+        {/* Setup Wizard Banner */}
+        {data?.questionsCount === 0 && (
+          <div className="mb-8 rounded-2xl bg-amber-50 border border-amber-200 p-6 dark:bg-amber-900/20 dark:border-amber-800">
+            <div className="flex gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-800/30 dark:text-amber-400">
+                <Database className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">Setup Required</h2>
+                <p className="text-amber-700 dark:text-amber-300 mt-1">
+                  It looks like your database hasn't been seeded yet. You need content to start studying!
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
+                    <Link to="/admin">Go to Admin Portal</Link>
+                  </Button>
+                  <code className="px-2 py-1 bg-amber-100 dark:bg-amber-800/40 rounded text-xs flex items-center">
+                    npm run seed
+                  </code>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Welcome & Quick Actions */}
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -217,6 +285,8 @@ export default function Dashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
+          {/* Exam Readiness Score */}
+          <ExamReadinessScore userId={user.id} />
           {/* Today's Plan */}
           <Card className="lg:col-span-2">
             <CardHeader>
@@ -343,6 +413,31 @@ export default function Dashboard() {
                     No practice yet today. Start a session!
                   </p>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gamification Panel */}
+          <Card className="flex flex-col h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Your Journey
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-6">
+              <LevelProgress
+                totalCorrect={data?.totalCorrect || 0}
+                totalAttempts={data?.totalAttempts || 0}
+                streak={data?.streak?.current_streak || 0}
+              />
+              <div className="border-t pt-4">
+                <AchievementsList
+                  totalCorrect={data?.totalCorrect || 0}
+                  totalAttempts={data?.totalAttempts || 0}
+                  streak={data?.streak?.current_streak || 0}
+                  strongestDomain={data?.strongestDomain}
+                />
               </div>
             </CardContent>
           </Card>

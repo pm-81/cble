@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/flashcards" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
               <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

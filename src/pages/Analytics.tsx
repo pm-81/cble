@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { ExamReadinessScore } from '@/components/ExamReadinessScore';
 import {
   Loader2,
   TrendingUp,
@@ -301,58 +302,63 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
           </Card>
         ) : (
           <>
-            {/* Top Insight Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-primary/5">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                    <Target className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold">{accuracyRate}%</p>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Accuracy</p>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Exam Readiness + Top Insight Cards */}
+            <div className="grid gap-6 lg:grid-cols-4">
+              <ExamReadinessScore userId={user.id} />
 
-              <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-info/5">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-info/10 text-info group-hover:scale-110 transition-transform">
-                    <Zap className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold">{data?.totalAttempts}</p>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Drills</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-success/5">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success group-hover:scale-110 transition-transform">
-                    <Award className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold">{data?.correctAttempts}</p>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Correct Answers</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-accent/5">
-                  <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${overconfidenceScore > 10 ? 'bg-warning/10 text-warning' : 'bg-muted/50 text-muted-foreground'} group-hover:scale-110 transition-transform`}>
-                    <AlertTriangle className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <p className="text-3xl font-bold">{overconfidenceScore > 0 ? `+${overconfidenceScore}` : overconfidenceScore}%</p>
-                      {overconfidenceScore > 10 ? <ArrowUpRight className="h-4 w-4 text-warning" /> : <ArrowDownRight className="h-4 w-4 text-success" />}
+              {/* Quick Stats - Vertical Stack */}
+              <div className="lg:col-span-3 grid gap-4 sm:grid-cols-3">
+                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
+                  <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-primary/5">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                      <Target className="h-7 w-7" />
                     </div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Confidence Gap</p>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div>
+                      <p className="text-3xl font-bold">{accuracyRate}%</p>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Accuracy</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
+                  <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-info/5">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-info/10 text-info group-hover:scale-110 transition-transform">
+                      <Zap className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{data?.totalAttempts}</p>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Drills</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
+                  <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-success/5">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success group-hover:scale-110 transition-transform">
+                      <Award className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{data?.correctAttempts}</p>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Correct Answers</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
+                  <CardContent className="flex items-center gap-4 p-6 bg-gradient-to-br from-card to-accent/5">
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${overconfidenceScore > 10 ? 'bg-warning/10 text-warning' : 'bg-muted/50 text-muted-foreground'} group-hover:scale-110 transition-transform`}>
+                      <AlertTriangle className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <p className="text-3xl font-bold">{overconfidenceScore > 0 ? `+${overconfidenceScore}` : overconfidenceScore}%</p>
+                        {overconfidenceScore > 10 ? <ArrowUpRight className="h-4 w-4 text-warning" /> : <ArrowDownRight className="h-4 w-4 text-success" />}
+                      </div>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Confidence Gap</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">

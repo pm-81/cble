@@ -274,8 +274,8 @@ CREATE POLICY "Admins can manage topics" ON public.topics
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));
 
 -- Questions policies (authenticated read)
-CREATE POLICY "Authenticated users can view active questions" ON public.questions
-    FOR SELECT TO authenticated USING (is_active = true);
+CREATE POLICY "Anyone can view active questions" ON public.questions
+    FOR SELECT USING (is_active = true);
 
 CREATE POLICY "Admins can manage all questions" ON public.questions
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));
@@ -284,8 +284,8 @@ CREATE POLICY "Anyone can insert questions" ON public.questions
     FOR INSERT WITH CHECK (true);
 
 -- Flashcards policies (authenticated read)
-CREATE POLICY "Authenticated users can view active flashcards" ON public.flashcards
-    FOR SELECT TO authenticated USING (is_active = true);
+CREATE POLICY "Anyone can view active flashcards" ON public.flashcards
+    FOR SELECT USING (is_active = true);
 
 CREATE POLICY "Admins can manage all flashcards" ON public.flashcards
     FOR ALL USING (public.has_role(auth.uid(), 'admin'));

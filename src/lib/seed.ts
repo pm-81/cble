@@ -1,4 +1,9 @@
 ﻿import { supabase } from './supabase-node';
+import { expandedQuestions, expandedFlashcards } from './questions-expanded';
+import { batch2Questions } from './questions-batch2';
+import { batch3Questions } from './questions-batch3';
+import { batch4Questions } from './questions-batch4';
+import { batch1Flashcards } from './flashcards-batch1';
 
 const domains = [
     { name: 'Entry / Entry Summary / Release', color: 'hsl(173, 80%, 40%)', icon: '📋' },
@@ -11,7 +16,7 @@ const domains = [
     { name: 'Other (FTZ / Drawback / In-bond / AD/CVD / PGA)', color: 'hsl(215, 16%, 47%)', icon: '🔧' },
 ];
 
-const questions = [
+export const questions = [
     // --- DOMAIN 0: Entry / Entry Summary ---
     {
         stem: 'Under 19 CFR 142.3, which of the following is NOT required to be filed as part of the entry documentation?',
@@ -247,7 +252,7 @@ const questions = [
     }
 ];
 
-const flashcards = [
+export const flashcards = [
     {
         front: 'GRI 1',
         back: 'Classification is determined by the terms of the headings and relative section or chapter notes.',
@@ -322,9 +327,10 @@ export async function seed() {
             return;
         }
 
-        // Seed Questions
-        console.log('❓ Seeding questions...');
-        for (const q of questions) {
+        // Seed Questions (merge original + expanded + batch 2 + batch 3 + batch 4)
+        const allQuestions = [...questions, ...expandedQuestions, ...batch2Questions, ...batch3Questions, ...batch4Questions];
+        console.log(`❓ Seeding ${allQuestions.length} questions...`);
+        for (const q of allQuestions) {
             const domainId = domainData.find(d => d.name === domains[q.domain_index].name)?.id;
             if (!domainId) {
                 console.error(`❌ Domain not found for index ${q.domain_index}`);
@@ -369,9 +375,10 @@ export async function seed() {
             }
         }
 
-        // Seed Flashcards
-        console.log('🃏 Seeding flashcards...');
-        for (const f of flashcards) {
+        // Seed Flashcards (merge original + expanded)
+        const allFlashcards = [...flashcards, ...expandedFlashcards, ...batch1Flashcards];
+        console.log(`🃏 Seeding ${allFlashcards.length} flashcards...`);
+        for (const f of allFlashcards) {
             const domainId = domainData.find(d => d.name === domains[f.domain_index].name)?.id;
             if (!domainId) {
                 console.error(`❌ Domain not found for index ${f.domain_index}`);

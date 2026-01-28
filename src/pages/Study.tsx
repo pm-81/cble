@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { ReferenceLibrary } from '@/components/ReferenceLibrary';
 import {
   Loader2,
   ChevronRight,
@@ -23,7 +24,8 @@ import {
   Home,
   BookOpen,
   Clock,
-  Target
+  Target,
+  Sparkles
 } from 'lucide-react';
 import type { AnswerChoice } from '@/types/database';
 
@@ -71,23 +73,87 @@ export default function Study() {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    async function fetchQuestions() {
+    async function fetchQuestionsAdaptive() {
       if (!user) return;
 
       try {
         const limit = mode === '2min' ? 5 : mode === 'exam_simulation' ? 80 : 20;
 
-        // Fetch random questions
-        const { data, error } = await supabase
+        // Get user's past attempts to identify weak areas
+        const { data: attempts } = await supabase
+          .from('question_attempts')
+          .select('question_id, is_correct, domain_id')
+          .eq('user_id', user.id);
+
+        // Calculate domain performance
+        const domainStats = new Map<string, { correct: number; total: number }>();
+        const attemptedQuestionIds = new Set<string>();
+
+        attempts?.forEach(a => {
+          attemptedQuestionIds.add(a.question_id);
+          if (a.domain_id) {
+            const current = domainStats.get(a.domain_id) || { correct: 0, total: 0 };
+            current.total++;
+            if (a.is_correct) current.correct++;
+            domainStats.set(a.domain_id, current);
+          }
+        });
+
+        // Find weak domains (accuracy < 70%)
+        const weakDomainIds: string[] = [];
+        domainStats.forEach((stats, domainId) => {
+          if (stats.total >= 3 && (stats.correct / stats.total) < 0.7) {
+            weakDomainIds.push(domainId);
+          }
+        });
+
+        // Adaptive fetching strategy
+        let fetchedQuestions: Question[] = [];
+
+        // 1. Prioritize questions from weak domains (40%)
+        if (weakDomainIds.length > 0 && mode !== 'exam_simulation') {
+          const weakDomainLimit = Math.ceil(limit * 0.4);
+          const { data: weakQuestions } = await supabase
+            .from('questions')
+            .select('*')
+            .eq('is_active', true)
+            .in('domain_id', weakDomainIds)
+            .limit(weakDomainLimit);
+          if (weakQuestions) fetchedQuestions.push(...weakQuestions);
+        }
+
+        // 2. Prioritize unattempted questions (40%)
+        const unattemptedLimit = Math.ceil(limit * 0.4);
+        const { data: newQuestions } = await supabase
           .from('questions')
           .select('*')
           .eq('is_active', true)
-          .limit(limit);
+          .limit(unattemptedLimit * 3); // Fetch more to filter
 
-        if (error) throw error;
+        if (newQuestions) {
+          const fresh = newQuestions.filter(q => !attemptedQuestionIds.has(q.id));
+          fetchedQuestions.push(...fresh.slice(0, unattemptedLimit));
+        }
 
-        // Shuffle questions
-        const shuffled = (data || []).sort(() => Math.random() - 0.5);
+        // 3. Fill remaining with random questions
+        const remaining = limit - fetchedQuestions.length;
+        if (remaining > 0) {
+          const { data: randomQuestions } = await supabase
+            .from('questions')
+            .select('*')
+            .eq('is_active', true)
+            .limit(remaining * 2);
+
+          if (randomQuestions) {
+            // Avoid duplicates
+            const existingIds = new Set(fetchedQuestions.map(q => q.id));
+            const unique = randomQuestions.filter(q => !existingIds.has(q.id));
+            fetchedQuestions.push(...unique.slice(0, remaining));
+          }
+        }
+
+        // Shuffle and limit
+        const shuffled = fetchedQuestions.sort(() => Math.random() - 0.5).slice(0, limit);
         setQuestions(shuffled);
 
         // Initialize states
@@ -110,7 +176,7 @@ export default function Study() {
       }
     }
 
-    fetchQuestions();
+    fetchQuestionsAdaptive();
   }, [user, mode]);
 
   const currentQuestion = questions[currentIndex];
@@ -302,10 +368,13 @@ export default function Study() {
         <div className="mb-6">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
             <span>Question {currentIndex + 1} of {questions.length}</span>
-            <span className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              {correctCount}/{answeredCount} correct
-            </span>
+            <div className="flex items-center gap-4">
+              <ReferenceLibrary />
+              <span className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                {correctCount}/{answeredCount} correct
+              </span>
+            </div>
           </div>
           <Progress value={((currentIndex + 1) / questions.length) * 100} className="h-2" />
         </div>
@@ -408,14 +477,42 @@ export default function Study() {
 
             {/* Rationale (after submit) - hidden in exam mode */}
             {currentState?.isSubmitted && !isExamMode && currentQuestion?.rationale && (
-              <div className={`mt-6 rounded-lg p-4 ${isCorrect ? 'bg-success/10' : 'bg-muted'}`}>
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold mb-2">
-                      {isCorrect ? 'Correct!' : 'Explanation'}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">{currentQuestion.rationale}</p>
+              <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className={`rounded-2xl border p-6 ${isCorrect ? 'bg-success/5 border-success/20' : 'bg-primary/5 border-primary/20'}`}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-card shadow-sm border border-border">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h4 className="text-lg font-bold">CBLE Sensei's Breakdown</h4>
+                        {isCorrect ? (
+                          <Badge className="bg-success text-success-foreground">Nailed it!</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-primary border-primary/30">Learning Moment</Badge>
+                        )}
+                      </div>
+
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                        <p>{currentQuestion.rationale}</p>
+                      </div>
+
+                      {/* Key Citations */}
+                      {currentQuestion.reference_cue && (
+                        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-border/50 pt-4">
+                          <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Legal Citations:</div>
+                          <ReferenceLibrary
+                            currentReference={currentQuestion.reference_cue}
+                            trigger={
+                              <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1.5 py-1.5 px-3">
+                                <BookOpen className="h-3.5 w-3.5" />
+                                {currentQuestion.reference_cue}
+                              </Badge>
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
