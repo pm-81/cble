@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -75,6 +76,7 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {user ? (
             <>
               {/* User Menu */}

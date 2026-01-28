@@ -165,51 +165,51 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
-                <Flame className="h-6 w-6 text-accent" />
+        <div className="mb-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="card-premium group hover:translate-y-[-4px]">
+            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
+                <Flame className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{data?.streak?.current_streak || 0}</p>
-                <p className="text-sm text-muted-foreground">Day Streak</p>
+                <p className="text-3xl font-black">{data?.streak?.current_streak || 0}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Day Streak</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10">
-                <Target className="h-6 w-6 text-success" />
+          <Card className="card-premium group hover:translate-y-[-4px]">
+            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success group-hover:scale-110 transition-transform">
+                <Target className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{accuracyRate}%</p>
-                <p className="text-sm text-muted-foreground">Accuracy Rate</p>
+                <p className="text-3xl font-black">{accuracyRate}%</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Accuracy</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-info/10">
-                <Brain className="h-6 w-6 text-info" />
+          <Card className="card-premium group hover:translate-y-[-4px]">
+            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-info/10 text-info group-hover:scale-110 transition-transform">
+                <Brain className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{data?.totalAttempts || 0}</p>
-                <p className="text-sm text-muted-foreground">Questions Practiced</p>
+                <p className="text-3xl font-black">{data?.totalAttempts || 0}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Drills</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                <TrendingUp className="h-6 w-6 text-primary" />
+          <Card className="card-premium group hover:translate-y-[-4px]">
+            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{data?.attemptsToday || 0}</p>
-                <p className="text-sm text-muted-foreground">Today's Progress</p>
+                <p className="text-3xl font-black">{data?.attemptsToday || 0}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Today's Progress</p>
               </div>
             </CardContent>
           </Card>

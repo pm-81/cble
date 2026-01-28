@@ -186,6 +186,25 @@
     @apply bg-card/80 backdrop-blur-lg border border-border/50;
   }
 
+  .glass-dark {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .card-premium {
+    @apply relative overflow-hidden rounded-3xl border-none shadow-2xl transition-all duration-300 hover:shadow-primary/20;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)/0.5) 100%);
+  }
+
+  .card-premium::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none;
+    background: radial-gradient(circle at center, hsl(var(--primary)/0.1) 0%, transparent 70%);
+  }
+
+  .card-premium:hover::before {
+    @apply opacity-100;
+  }
+
   .shadow-glow {
     box-shadow: 0 0 40px -10px hsl(var(--primary) / 0.3);
   }

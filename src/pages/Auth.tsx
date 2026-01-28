@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { z } from 'zod';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -101,7 +102,7 @@ export default function Auth() {
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
 
       {/* Header */}
-      <header className="container py-6">
+      <header className="container py-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
             <BookOpen className="h-5 w-5 text-primary-foreground" />
@@ -110,6 +111,7 @@ export default function Auth() {
             CBLE<span className="text-primary">Test</span>
           </span>
         </Link>
+        <ThemeToggle />
       </header>
 
       {/* Auth Card */}

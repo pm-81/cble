@@ -19,7 +19,9 @@ import {
   ThumbsUp,
   ThumbsDown,
   Minus,
-  Zap
+  Zap,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { calculateSM2, ratingToQuality } from '@/lib/spaced-repetition';
 
@@ -64,19 +66,8 @@ export default function Flashcards() {
       if (!user) return;
 
       try {
-        // Fetch flashcards due for review
-        const { data: flashcardsData, error: flashcardsError } = await supabase
-          .from('flashcards')
-          .select(`
-            *,
-            domains (name)
-          `)
-          .eq('is_active', true)
-          .limit(20);
-
-        if (flashcardsError) throw flashcardsError;
-
-        // Fetch user's progress
+        setLoading(true);
+        // 1. Fetch user's flashcard progress for ALL cards
         const { data: progressData, error: progressError } = await supabase
           .from('flashcard_progress')
           .select('*')
@@ -86,6 +77,8 @@ export default function Flashcards() {
 
         // Create progress map
         const progressMap = new Map<string, FlashcardProgress>();
+        const reviewedIds = new Set<string>();
+
         progressData?.forEach(p => {
           progressMap.set(p.flashcard_id, {
             flashcard_id: p.flashcard_id,
@@ -94,23 +87,70 @@ export default function Flashcards() {
             repetitions: p.repetitions || 0,
             due_date: p.due_date || new Date().toISOString(),
           });
+          reviewedIds.add(p.flashcard_id);
         });
 
-        // Sort flashcards - due first, then new
-        const sortedFlashcards = (flashcardsData || []).sort((a, b) => {
-          const progressA = progressMap.get(a.id);
-          const progressB = progressMap.get(b.id);
+        // 2. Identify due card IDs
+        const now = new Date();
+        const dueIds = progressData
+          ?.filter(p => new Date(p.due_date) <= now)
+          .map(p => p.flashcard_id) || [];
 
-          // New cards (no progress) come after due cards
-          if (!progressA && progressB) return 1;
-          if (progressA && !progressB) return -1;
-          if (!progressA && !progressB) return 0;
+        let finalCards: Flashcard[] = [];
 
-          // Sort by due date
-          return new Date(progressA!.due_date).getTime() - new Date(progressB!.due_date).getTime();
+        // 3. If there are due cards, fetch them
+        if (dueIds.length > 0) {
+          const { data: dueCards, error: dueError } = await supabase
+            .from('flashcards')
+            .select('*, domains(name)')
+            .in('id', dueIds.slice(0, 20))
+            .eq('is_active', true);
+
+          if (dueError) throw dueError;
+          if (dueCards) finalCards = [...dueCards];
+        }
+
+        // 4. If we have fewer than 20 cards, fetch some new ones
+        if (finalCards.length < 20) {
+          const limit = 20 - finalCards.length;
+
+          // Fetch cards that haven't been reviewed yet
+          // Since we can't easily do NOT IN in a single simple query with many IDs
+          // we'll fetch a batch and filter in JS, or use a better query if IDs are few
+
+          let query = supabase
+            .from('flashcards')
+            .select('*, domains(name)')
+            .eq('is_active', true)
+            .limit(50); // Get a larger batch to filter
+
+          const { data: potentialNewCards, error: newError } = await query;
+
+          if (newError) throw newError;
+
+          if (potentialNewCards) {
+            const reallyNewCards = potentialNewCards
+              .filter(c => !reviewedIds.has(c.id))
+              .slice(0, limit);
+
+            finalCards = [...finalCards, ...reallyNewCards];
+          }
+        }
+
+        // Sort: Due date first, then new
+        finalCards.sort((a, b) => {
+          const progA = progressMap.get(a.id);
+          const progB = progressMap.get(b.id);
+
+          if (progA && progB) {
+            return new Date(progA.due_date).getTime() - new Date(progB.due_date).getTime();
+          }
+          if (progA) return -1;
+          if (progB) return 1;
+          return 0;
         });
 
-        setFlashcards(sortedFlashcards);
+        setFlashcards(finalCards);
         setProgress(progressMap);
       } catch (error) {
         console.error('Error fetching flashcards:', error);
@@ -173,14 +213,27 @@ export default function Flashcards() {
       });
 
       // Mark as reviewed
-      setReviewed(prev => new Set(prev).add(currentCard.id));
+      if (rating !== 'again') {
+        setReviewed(prev => new Set(prev).add(currentCard.id));
+      }
 
-      // Move to next card
-      if (currentIndex < flashcards.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+      // Move to next card or re-queue
+      if (rating === 'again') {
+        setFlashcards(prev => {
+          const updated = [...prev];
+          const [card] = updated.splice(currentIndex, 1);
+          updated.push(card);
+          return updated;
+        });
         setIsFlipped(false);
+        // currentIndex stays the same because the card moved to end and next card is now at currentIndex
       } else {
-        setSessionComplete(true);
+        if (currentIndex < flashcards.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+          setIsFlipped(false);
+        } else {
+          setSessionComplete(true);
+        }
       }
     } catch (error) {
       console.error('Error saving progress:', error);
@@ -233,41 +286,43 @@ export default function Flashcards() {
   if (sessionComplete) {
     return (
       <Layout showFooter={false}>
-        <div className="container max-w-2xl py-12">
-          <Card className="text-center">
-            <CardContent className="pt-8 pb-10">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full gradient-primary">
-                <Zap className="h-10 w-10 text-primary-foreground" />
-              </div>
-              <h2 className="font-display text-2xl font-bold">Session Complete!</h2>
-              <p className="mt-2 text-muted-foreground">
-                Great work reviewing your flashcards.
+        <div className="min-h-[calc(100vh-4rem)] bg-muted/30 dark:bg-background flex items-center justify-center p-4">
+          <Card className="max-w-xl w-full text-center card-premium overflow-visible p-1">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full gradient-primary flex items-center justify-center shadow-xl border-4 border-background animate-fade-in-up">
+              <Sparkles className="h-12 w-12 text-primary-foreground" />
+            </div>
+
+            <CardContent className="pt-16 pb-12 px-8">
+              <h2 className="font-display text-4xl font-bold tracking-tight mb-2">Session Mastered!</h2>
+              <p className="text-muted-foreground text-lg mb-10">
+                You've strengthened your recall on {reviewed.size} key concepts.
               </p>
 
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                <div className="rounded-lg bg-muted p-4">
-                  <p className="text-2xl font-bold text-primary">{reviewed.size}</p>
-                  <p className="text-sm text-muted-foreground">Cards Reviewed</p>
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 shadow-sm transition-all hover:shadow-md">
+                  <p className="text-4xl font-black text-primary mb-1">{reviewed.size}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-primary/70">Reviewed</p>
                 </div>
-                <div className="rounded-lg bg-muted p-4">
-                  <p className="text-2xl font-bold text-success">{flashcards.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Cards</p>
+                <div className="p-6 rounded-3xl bg-success/5 border border-success/10 shadow-sm transition-all hover:shadow-md">
+                  <p className="text-4xl font-black text-success mb-1">100%</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-success/70">Retention</p>
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-center gap-4">
-                <Button variant="outline" asChild>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button variant="outline" size="lg" asChild className="rounded-2xl border-2 px-8 h-14 font-bold text-base">
                   <a href="/dashboard" className="gap-2">
-                    <Home className="h-4 w-4" />
+                    <Home className="h-5 w-5" />
                     Dashboard
                   </a>
                 </Button>
                 <Button
-                  className="gradient-primary gap-2"
+                  size="lg"
+                  className="gradient-primary shadow-glow rounded-2xl px-8 h-14 font-bold text-base"
                   onClick={() => window.location.reload()}
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  New Session
+                  <RotateCcw className="h-5 w-5 mr-1" />
+                  Continue Session
                 </Button>
               </div>
             </CardContent>
@@ -279,155 +334,181 @@ export default function Flashcards() {
 
   return (
     <Layout showFooter={false}>
-      <div className="container max-w-2xl py-6">
-        {/* Progress Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-            <span>Card {currentIndex + 1} of {flashcards.length}</span>
-            <span className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              {reviewed.size} reviewed
-            </span>
+      <div className="min-h-[calc(100vh-4rem)] bg-muted/30 dark:bg-background flex flex-col items-center py-6 sm:py-12 px-4">
+        <div className="w-full max-w-2xl">
+          {/* Progress Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between text-sm font-medium text-muted-foreground mb-3">
+              <span className="bg-background px-3 py-1 rounded-full border shadow-sm">
+                Card <span className="text-primary font-bold">{currentIndex + 1}</span> of {flashcards.length}
+              </span>
+              <span className="flex items-center gap-2 bg-background px-3 py-1 rounded-full border shadow-sm">
+                <Zap className="h-4 w-4 text-primary" />
+                {reviewed.size} reviewed
+              </span>
+            </div>
+            <Progress value={((currentIndex + 1) / flashcards.length) * 100} className="h-2.5 shadow-inner" />
           </div>
-          <Progress value={((currentIndex + 1) / flashcards.length) * 100} className="h-2" />
-        </div>
 
-        {/* Flashcard */}
-        <div
-          className="perspective-1000 cursor-pointer mb-6"
-          onClick={handleFlip}
-        >
+          {/* Flashcard Container */}
           <div
-            className={`relative transition-all duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''
-              }`}
-            style={{
-              transformStyle: 'preserve-3d',
-              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-            }}
+            className="perspective-1000 cursor-pointer group mb-10"
+            onClick={handleFlip}
           >
-            {/* Front */}
-            <Card
-              className={`min-h-[350px] shadow-xl border-none ${isFlipped ? 'invisible' : 'visible'}`}
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              <CardContent className="flex flex-col items-center justify-center min-h-[350px] p-10 text-center bg-gradient-to-br from-card to-muted/20">
-                <Badge variant="outline" className="mb-6 px-3 py-1 bg-primary/5 text-primary border-primary/20 uppercase tracking-widest text-[10px] font-bold">
-                  {(currentCard as any)?.domains?.name || 'General Knowledge'}
-                </Badge>
-                <p className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
-                  {currentCard?.front}
-                </p>
-                <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 opacity-40 group">
-                  <RotateCcw className="h-4 w-4 animate-spin-slow" />
-                  <span className="text-[10px] uppercase font-bold tracking-widest">Click to reveal answer</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Back */}
-            <Card
-              className={`min-h-[350px] shadow-xl border-none absolute top-0 left-0 w-full ${isFlipped ? 'visible' : 'invisible'}`}
+            <div
+              className={`relative transition-all duration-700 ease-in-out transform-style-3d min-h-[400px] sm:min-h-[450px] ${isFlipped ? 'rotate-y-180' : ''
+                }`}
               style={{
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)'
+                transformStyle: 'preserve-3d',
+                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
               }}
             >
-              <CardContent className="flex flex-col items-center justify-center min-h-[350px] p-10 text-center bg-gradient-to-tr from-primary/5 to-card">
-                <Badge variant="outline" className="absolute top-6 right-6 px-3 py-1 bg-primary text-primary-foreground border-none font-bold text-[10px]">
-                  ANSWER
-                </Badge>
-                <p className="text-xl font-medium leading-relaxed text-foreground/90 sm:text-2xl">
-                  {currentCard?.back}
-                </p>
-                {currentCard?.reference_cue && (
-                  <div className="mt-8 flex items-center gap-2 px-4 py-2 rounded-lg bg-muted border font-mono text-xs text-muted-foreground uppercase tracking-wider">
-                    <BookOpen className="h-3 w-3" />
-                    {currentCard.reference_cue}
+              {/* Front Side */}
+              <Card
+                className={`absolute inset-0 shadow-2xl border-2 border-primary/10 bg-card flex items-center justify-center backface-hidden transition-all group-hover:border-primary/30 ${isFlipped ? 'pointer-events-none' : ''}`}
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <CardContent className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full w-full">
+                  <div className="absolute top-6 left-6 flex items-center gap-2">
+                    <Badge variant="outline" className="px-3 py-1 bg-primary/5 text-primary border-primary/20 text-[10px] uppercase font-black tracking-[0.2em]">
+                      QUESTION
+                    </Badge>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+
+                  <div className="mb-8 p-3 rounded-2xl bg-primary/5 text-primary">
+                    <BookOpen className="h-8 w-8" />
+                  </div>
+
+                  <h3 className="text-2xl sm:text-4xl font-display font-bold leading-tight tracking-tight text-foreground">
+                    {currentCard?.front}
+                  </h3>
+
+                  <div className="mt-6">
+                    <Badge variant="secondary" className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+                      {(currentCard as any)?.domains?.name || 'General Knowledge'}
+                    </Badge>
+                  </div>
+
+                  <div className="absolute bottom-10 flex flex-col items-center gap-3 animate-bounce opacity-30">
+                    <RotateCcw className="h-5 w-5" />
+                    <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Tap to flip</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Back Side */}
+              <Card
+                className={`absolute inset-0 shadow-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card flex items-center justify-center backface-hidden ${!isFlipped ? 'pointer-events-none' : ''}`}
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)'
+                }}
+              >
+                <CardContent className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full w-full">
+                  <div className="absolute top-6 right-6">
+                    <Badge className="gradient-primary border-none px-4 py-1.5 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg">
+                      THE ANSWER
+                    </Badge>
+                  </div>
+
+                  <div className="mb-8 p-3 rounded-2xl bg-success/10 text-success">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+
+                  <p className="text-xl sm:text-3xl font-medium leading-relaxed text-foreground/90 max-w-[90%] font-display">
+                    {currentCard?.back}
+                  </p>
+
+                  {currentCard?.reference_cue && (
+                    <div className="mt-10 flex items-center gap-3 px-5 py-3 rounded-xl bg-muted/80 backdrop-blur-sm border-2 border-dashed font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                      <span className="bg-primary/20 text-primary px-2 py-0.5 rounded font-bold text-[10px]">REF</span>
+                      {currentCard.reference_cue}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
 
-        {/* Rating Buttons (shown when flipped) */}
-        {isFlipped && (
-          <div className="grid grid-cols-4 gap-2 mb-6">
+          {/* Rating Buttons (shown when flipped) */}
+          {isFlipped && (
+            <div className="grid grid-cols-4 gap-2 mb-6">
+              <Button
+                variant="outline"
+                className="flex-col h-auto py-3 border-destructive/50 hover:bg-destructive/10"
+                onClick={() => handleRating('again')}
+              >
+                <ThumbsDown className="h-5 w-5 mb-1 text-destructive" />
+                <span className="text-xs">Again</span>
+                <span className="text-[10px] text-muted-foreground">&lt;1 min</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-col h-auto py-3 border-warning/50 hover:bg-warning/10"
+                onClick={() => handleRating('hard')}
+              >
+                <Minus className="h-5 w-5 mb-1 text-warning" />
+                <span className="text-xs">Hard</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {currentProgress ? Math.max(1, Math.round(currentProgress.interval_days * 0.8)) : 1}d
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-col h-auto py-3 border-success/50 hover:bg-success/10"
+                onClick={() => handleRating('good')}
+              >
+                <ThumbsUp className="h-5 w-5 mb-1 text-success" />
+                <span className="text-xs">Good</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {currentProgress ? currentProgress.interval_days : 1}d
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-col h-auto py-3 border-primary/50 hover:bg-primary/10"
+                onClick={() => handleRating('easy')}
+              >
+                <Zap className="h-5 w-5 mb-1 text-primary" />
+                <span className="text-xs">Easy</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {currentProgress ? Math.round(currentProgress.interval_days * 1.3) : 4}d
+                </span>
+              </Button>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
             <Button
               variant="outline"
-              className="flex-col h-auto py-3 border-destructive/50 hover:bg-destructive/10"
-              onClick={() => handleRating('again')}
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="gap-2"
             >
-              <ThumbsDown className="h-5 w-5 mb-1 text-destructive" />
-              <span className="text-xs">Again</span>
-              <span className="text-[10px] text-muted-foreground">&lt;1 min</span>
+              <ChevronLeft className="h-4 w-4" />
+              Previous
             </Button>
+
             <Button
               variant="outline"
-              className="flex-col h-auto py-3 border-warning/50 hover:bg-warning/10"
-              onClick={() => handleRating('hard')}
+              onClick={handleFlip}
+              className="gap-2"
             >
-              <Minus className="h-5 w-5 mb-1 text-warning" />
-              <span className="text-xs">Hard</span>
-              <span className="text-[10px] text-muted-foreground">
-                {currentProgress ? Math.max(1, Math.round(currentProgress.interval_days * 0.8)) : 1}d
-              </span>
+              {isFlipped ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {isFlipped ? 'Hide' : 'Show'} Answer
             </Button>
+
             <Button
               variant="outline"
-              className="flex-col h-auto py-3 border-success/50 hover:bg-success/10"
-              onClick={() => handleRating('good')}
+              onClick={handleNext}
+              disabled={currentIndex === flashcards.length - 1}
+              className="gap-2"
             >
-              <ThumbsUp className="h-5 w-5 mb-1 text-success" />
-              <span className="text-xs">Good</span>
-              <span className="text-[10px] text-muted-foreground">
-                {currentProgress ? currentProgress.interval_days : 1}d
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-col h-auto py-3 border-primary/50 hover:bg-primary/10"
-              onClick={() => handleRating('easy')}
-            >
-              <Zap className="h-5 w-5 mb-1 text-primary" />
-              <span className="text-xs">Easy</span>
-              <span className="text-[10px] text-muted-foreground">
-                {currentProgress ? Math.round(currentProgress.interval_days * 1.3) : 4}d
-              </span>
+              Next
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        )}
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-            className="gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={handleFlip}
-            className="gap-2"
-          >
-            {isFlipped ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            {isFlipped ? 'Hide' : 'Show'} Answer
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={handleNext}
-            disabled={currentIndex === flashcards.length - 1}
-            className="gap-2"
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </Layout>
