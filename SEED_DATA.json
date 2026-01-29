@@ -1,0 +1,46 @@
+{
+    "flashcards": [
+        {
+            "front": "GRI 1",
+            "back": "Classification is determined by the terms of the headings and relative section or chapter notes.",
+            "reference_cue": "General Rule of Interpretation 1",
+            "domain_index": 1
+        },
+        {
+            "front": "Customs Broker Record Retention Period",
+            "back": "5 years from the date of entry.",
+            "reference_cue": "19 CFR 111.23",
+            "domain_index": 4
+        },
+        {
+            "front": "Transactional Value (Primary Appraisement)",
+            "back": "Price actually paid or payable for the merchandise when sold for exportation to the United States.",
+            "reference_cue": "19 CFR 152.103",
+            "domain_index": 2
+        },
+        {
+            "front": "Timeframe for filing Entry Summary (7501)",
+            "back": "10 working days after the time of entry release.",
+            "reference_cue": "19 CFR 142.12",
+            "domain_index": 0
+        },
+        {
+            "front": "Drawback: Time limit for filing",
+            "back": "Within 5 years after the date of importation of the merchandise.",
+            "reference_cue": "19 CFR 190",
+            "domain_index": 7
+        },
+        {
+            "front": "TIB (Temporary Importation under Bond): Duration",
+            "back": "1 year, extensible to a total of 3 years.",
+            "reference_cue": "19 CFR 10.31",
+            "domain_index": 0
+        },
+        {
+            "front": "Country of Origin marking",
+            "back": "Must be marked in a conspicuous place as legibly, indelibly, and permanently as the nature of the article will permit.",
+            "reference_cue": "19 CFR 134.11",
+            "domain_index": 5
+        }
+    ]
+}

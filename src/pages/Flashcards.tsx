@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { calculateSM2, ratingToQuality } from '@/lib/spaced-repetition';
 
+import { FALLBACK_FLASHCARDS } from '@/lib/fallback-data';
+
 interface Flashcard {
   id: string;
   front: string;
@@ -63,85 +65,83 @@ export default function Flashcards() {
 
   useEffect(() => {
     async function fetchFlashcards() {
-      if (!user) return;
+      // Always allow fallback for better UX if auth fails or DB is empty
+      const isAuthMode = !!user;
 
       try {
         setLoading(true);
-        // 1. Fetch user's flashcard progress for ALL cards
-        const { data: progressData, error: progressError } = await supabase
-          .from('flashcard_progress')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (progressError) throw progressError;
-
-        // Create progress map
-        const progressMap = new Map<string, FlashcardProgress>();
-        const reviewedIds = new Set<string>();
-
-        progressData?.forEach(p => {
-          progressMap.set(p.flashcard_id, {
-            flashcard_id: p.flashcard_id,
-            ease_factor: p.ease_factor || 2.5,
-            interval_days: p.interval_days || 1,
-            repetitions: p.repetitions || 0,
-            due_date: p.due_date || new Date().toISOString(),
-          });
-          reviewedIds.add(p.flashcard_id);
-        });
-
-        // 2. Identify due card IDs
-        const now = new Date();
-        const dueIds = progressData
-          ?.filter(p => new Date(p.due_date) <= now)
-          .map(p => p.flashcard_id) || [];
 
         let finalCards: Flashcard[] = [];
+        let progressMap = new Map<string, FlashcardProgress>();
+        const reviewedIds = new Set<string>();
 
-        // 3. If there are due cards, fetch them
-        if (dueIds.length > 0) {
-          const { data: dueCards, error: dueError } = await supabase
-            .from('flashcards')
-            .select('*, domains(name)')
-            .in('id', dueIds.slice(0, 20))
-            .eq('is_active', true);
+        if (isAuthMode && user) {
+          // 1. Fetch user's flashcard progress for ALL cards
+          const { data: progressData } = await supabase
+            .from('flashcard_progress')
+            .select('*')
+            .eq('user_id', user.id);
 
-          if (dueError) throw dueError;
-          if (dueCards) finalCards = [...dueCards];
+          // Create progress map
+          progressData?.forEach(p => {
+            progressMap.set(p.flashcard_id, {
+              flashcard_id: p.flashcard_id,
+              ease_factor: p.ease_factor || 2.5,
+              interval_days: p.interval_days || 1,
+              repetitions: p.repetitions || 0,
+              due_date: p.due_date || new Date().toISOString(),
+            });
+            reviewedIds.add(p.flashcard_id);
+          });
+
+          // 2. Identify due card IDs
+          const now = new Date();
+          const dueIds = progressData
+            ?.filter(p => new Date(p.due_date) <= now)
+            .map(p => p.flashcard_id) || [];
+
+          // 3. If there are due cards, fetch them
+          if (dueIds.length > 0) {
+            const { data: dueCards } = await supabase
+              .from('flashcards')
+              .select('*, domains(name)')
+              .in('id', dueIds.slice(0, 20))
+              .eq('is_active', true);
+
+            if (dueCards) finalCards = [...dueCards];
+          }
+
+          // 4. If we have fewer than 20 cards, fetch some new ones
+          if (finalCards.length < 20) {
+            const limit = 20 - finalCards.length;
+            const { data: potentialNewCards } = await supabase
+              .from('flashcards')
+              .select('*, domains(name)')
+              .eq('is_active', true)
+              .limit(50);
+
+            if (potentialNewCards) {
+              const reallyNewCards = potentialNewCards
+                .filter(c => !reviewedIds.has(c.id))
+                .slice(0, limit);
+              finalCards = [...finalCards, ...reallyNewCards];
+            }
+          }
         }
 
-        // 4. If we have fewer than 20 cards, fetch some new ones
-        if (finalCards.length < 20) {
-          const limit = 20 - finalCards.length;
-
-          // Fetch cards that haven't been reviewed yet
-          // Since we can't easily do NOT IN in a single simple query with many IDs
-          // we'll fetch a batch and filter in JS, or use a better query if IDs are few
-
-          let query = supabase
-            .from('flashcards')
-            .select('*, domains(name)')
-            .eq('is_active', true)
-            .limit(50); // Get a larger batch to filter
-
-          const { data: potentialNewCards, error: newError } = await query;
-
-          if (newError) throw newError;
-
-          if (potentialNewCards) {
-            const reallyNewCards = potentialNewCards
-              .filter(c => !reviewedIds.has(c.id))
-              .slice(0, limit);
-
-            finalCards = [...finalCards, ...reallyNewCards];
-          }
+        // --- FALLBACK LOGIC ---
+        // If DB returned nothing (or we aren't logged in), use the local fallback data
+        if (finalCards.length === 0) {
+          console.log('Using fallback flashcards');
+          // Shuffle and pick 20
+          const shuffled = [...FALLBACK_FLASHCARDS].sort(() => 0.5 - Math.random());
+          finalCards = shuffled.slice(0, 20) as unknown as Flashcard[];
         }
 
         // Sort: Due date first, then new
         finalCards.sort((a, b) => {
           const progA = progressMap.get(a.id);
           const progB = progressMap.get(b.id);
-
           if (progA && progB) {
             return new Date(progA.due_date).getTime() - new Date(progB.due_date).getTime();
           }
@@ -154,6 +154,9 @@ export default function Flashcards() {
         setProgress(progressMap);
       } catch (error) {
         console.error('Error fetching flashcards:', error);
+        // Ensure we still show something on error
+        const shuffled = [...FALLBACK_FLASHCARDS].sort(() => 0.5 - Math.random());
+        setFlashcards(shuffled.slice(0, 20) as unknown as Flashcard[]);
       } finally {
         setLoading(false);
       }
@@ -170,7 +173,31 @@ export default function Flashcards() {
   };
 
   const handleRating = async (rating: Rating) => {
-    if (!currentCard || !user) return;
+    // Basic guard
+    if (!currentCard) return;
+
+    // Fallback: If no user or mock card, just basic local navigation
+    if (!user || currentCard.id.startsWith('mock-')) {
+      // Simulate spaced repetition locally if we wanted, but for now just move on
+      if (rating === 'again') {
+        // Same re-queue logic
+        setFlashcards(prev => {
+          const updated = [...prev];
+          const [card] = updated.splice(currentIndex, 1);
+          updated.push(card);
+          return updated;
+        });
+        setIsFlipped(false);
+      } else {
+        if (currentIndex < flashcards.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+          setIsFlipped(false);
+        } else {
+          setSessionComplete(true);
+        }
+      }
+      return;
+    }
 
     const quality = ratingToQuality(rating);
     const currentEF = currentProgress?.ease_factor || 2.5;
