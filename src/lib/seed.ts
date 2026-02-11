@@ -3,7 +3,17 @@ import { expandedQuestions, expandedFlashcards } from './questions-expanded';
 import { batch2Questions } from './questions-batch2';
 import { batch3Questions } from './questions-batch3';
 import { batch4Questions } from './questions-batch4';
+import { batch5Questions } from './questions-batch5';
+import { batch6Questions } from './questions-batch6';
+import { batch7Questions } from './questions-batch7';
+import { batch8Questions } from './questions-batch8';
+import { batch9Questions } from './questions-batch9';
+import { batch10Questions } from './questions-batch10';
+import { batch11Questions } from './questions-batch11';
+import { batch12Questions } from './questions-batch12';
 import { batch1Flashcards } from './flashcards-batch1';
+import { batch2Flashcards } from './flashcards-batch2';
+import { batch3Flashcards } from './flashcards-batch3';
 import { domains, questions, flashcards } from './static-data';
 
 // ... existing seed function ...
@@ -57,7 +67,7 @@ export async function seed() {
         }
 
         // Seed Questions (merge original + expanded + batch 2 + batch 3 + batch 4)
-        const allQuestions = [...questions, ...expandedQuestions, ...batch2Questions, ...batch3Questions, ...batch4Questions];
+        const allQuestions = [...questions, ...expandedQuestions, ...batch2Questions, ...batch3Questions, ...batch4Questions, ...batch5Questions, ...batch6Questions, ...batch7Questions, ...batch8Questions, ...batch9Questions, ...batch10Questions, ...batch11Questions, ...batch12Questions];
         console.log(`❓ Seeding ${allQuestions.length} questions...`);
         for (const q of allQuestions) {
             const domainId = domainData.find(d => d.name === domains[q.domain_index].name)?.id;
@@ -105,7 +115,7 @@ export async function seed() {
         }
 
         // Seed Flashcards (merge original + expanded)
-        const allFlashcards = [...flashcards, ...expandedFlashcards, ...batch1Flashcards];
+        const allFlashcards = [...flashcards, ...expandedFlashcards, ...batch1Flashcards, ...batch2Flashcards, ...batch3Flashcards];
         console.log(`🃏 Seeding ${allFlashcards.length} flashcards...`);
         for (const f of allFlashcards) {
             const domainId = domainData.find(d => d.name === domains[f.domain_index].name)?.id;

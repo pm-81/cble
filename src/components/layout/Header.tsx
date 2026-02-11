@@ -20,7 +20,11 @@ import {
   Menu,
   X,
   Trophy,
-  CreditCard
+  CreditCard,
+  StickyNote,
+  CalendarDays,
+  Compass,
+  Library
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -40,8 +44,8 @@ export function Header() {
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Study', href: '/study', icon: BookOpen },
     { label: 'Analytics', href: '/analytics', icon: Flame },
+    { label: 'Drill', href: '/navigation-drill', icon: Compass },
     { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
-    { label: 'Pricing', href: '/pricing', icon: CreditCard },
   ] : [
     { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { label: 'Pricing', href: '/pricing', icon: CreditCard },
@@ -111,6 +115,24 @@ export function Header() {
                     <Link to="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/notes" className="cursor-pointer">
+                      <StickyNote className="mr-2 h-4 w-4" />
+                      My Notes
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/study-plan" className="cursor-pointer">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      Study Plan
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/reference" className="cursor-pointer">
+                      <Library className="mr-2 h-4 w-4" />
+                      eCFR Reference
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
