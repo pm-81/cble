@@ -22,6 +22,7 @@ import Notes from "./pages/Notes";
 import StudyPlan from "./pages/StudyPlan";
 import NavigationDrill from "./pages/NavigationDrill";
 import ReferenceLibrary from "./pages/ReferenceLibrary";
+import Help from "./pages/Help";
 import { useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -80,6 +81,7 @@ const App = () => (
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/help" element={<Help />} />
 
               {/* Protected Routes */}
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />

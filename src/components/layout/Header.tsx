@@ -24,7 +24,8 @@ import {
   StickyNote,
   CalendarDays,
   Compass,
-  Library
+  Library,
+  HelpCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -48,6 +49,7 @@ export function Header() {
     { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
   ] : [
     { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+    { label: 'Help', href: '/help', icon: HelpCircle },
     { label: 'Pricing', href: '/pricing', icon: CreditCard },
   ];
 
@@ -133,6 +135,12 @@ export function Header() {
                     <Link to="/reference" className="cursor-pointer">
                       <Library className="mr-2 h-4 w-4" />
                       eCFR Reference
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/help" className="cursor-pointer">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Help Center
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
