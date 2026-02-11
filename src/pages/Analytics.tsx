@@ -302,62 +302,87 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
           </Card>
         ) : (
           <>
-            {/* Exam Readiness + Top Insight Cards */}
-            <div className="grid gap-6 lg:grid-cols-4">
-              <ExamReadinessScore userId={user.id} />
+            {/* Top Row: Readiness + KPI Grid - High Density Layout */}
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Exam Readiness Score - Takes up 4 columns */}
+              <div className="lg:col-span-4 flex flex-col h-full">
+                <ExamReadinessScore userId={user.id} />
+              </div>
 
-              {/* Quick Stats - Vertical Stack */}
-              <div className="lg:col-span-3 grid gap-4 sm:grid-cols-3">
-                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                  <CardContent className="flex items-center gap-3 p-4 bg-gradient-to-br from-card to-primary/5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                      <Target className="h-6 w-6" />
+              {/* KPI Metrics - Takes up 8 columns in a 2x2 grid */}
+              <div className="lg:col-span-8 grid gap-4 grid-cols-2 sm:grid-cols-4">
+
+                <Card className="shadow-sm border-border/50 hover:bg-muted/20 transition-colors col-span-2 sm:col-span-1">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Accuracy</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">{accuracyRate}%</span>
+                      <Target className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold">{accuracyRate}%</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Overall Accuracy</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Overall precision</p>
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                  <CardContent className="flex items-center gap-3 p-4 bg-gradient-to-br from-card to-info/5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-info/10 text-info group-hover:scale-110 transition-transform">
-                      <Zap className="h-6 w-6" />
+                <Card className="shadow-sm border-border/50 hover:bg-muted/20 transition-colors col-span-2 sm:col-span-1">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Questions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">{data?.totalAttempts}</span>
+                      <Zap className="h-4 w-4 text-info" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold">{data?.totalAttempts}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Drills</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Lifetime attempts</p>
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                  <CardContent className="flex items-center gap-3 p-4 bg-gradient-to-br from-card to-success/5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10 text-success group-hover:scale-110 transition-transform">
-                      <Award className="h-6 w-6" />
+                <Card className="shadow-sm border-border/50 hover:bg-muted/20 transition-colors col-span-2 sm:col-span-1">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Correct</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">{data?.correctAttempts}</span>
+                      <Award className="h-4 w-4 text-success" />
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold">{data?.correctAttempts}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Correct Answers</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Valid answers</p>
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-lg border-none overflow-hidden group hover:translate-y-[-2px] transition-transform">
-                  <CardContent className="flex items-center gap-3 p-4 bg-gradient-to-br from-card to-accent/5">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${overconfidenceScore > 10 ? 'bg-warning/10 text-warning' : 'bg-muted/50 text-muted-foreground'} group-hover:scale-110 transition-transform`}>
-                      <AlertTriangle className="h-6 w-6" />
+                <Card className="shadow-sm border-border/50 hover:bg-muted/20 transition-colors col-span-2 sm:col-span-1">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Calibration</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-3xl font-bold ${overconfidenceScore > 10 ? 'text-warning' : 'text-foreground'}`}>
+                        {overconfidenceScore > 0 ? `+${overconfidenceScore}` : overconfidenceScore}%
+                      </span>
+                      <AlertTriangle className={`h-4 w-4 ${overconfidenceScore > 10 ? 'text-warning' : 'text-muted-foreground'}`} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <p className="text-2xl font-bold">{overconfidenceScore > 0 ? `+${overconfidenceScore}` : overconfidenceScore}%</p>
-                        {overconfidenceScore > 10 ? <ArrowUpRight className="h-3 w-3 text-warning" /> : <ArrowDownRight className="h-3 w-3 text-success" />}
-                      </div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Confidence Gap</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Confidence gap</p>
                   </CardContent>
                 </Card>
+
+                {/* Secondary Stats Row within the same block for better density */}
+                <Card className="col-span-2 shadow-sm border-border/50 flex flex-col justify-center p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Strongest Domain</span>
+                    <Badge variant="outline" className="bg-success/5 text-success border-success/20 text-[10px]">{strongestDomain?.accuracy || 0}%</Badge>
+                  </div>
+                  <p className="font-bold text-sm truncate" title={strongestDomain?.name}>{strongestDomain?.shorthand || 'N/A'}</p>
+                </Card>
+
+                <Card className="col-span-2 shadow-sm border-border/50 flex flex-col justify-center p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Focus Area</span>
+                    <Badge variant="outline" className="bg-destructive/5 text-destructive border-destructive/20 text-[10px]">{weakestDomain?.accuracy || 0}%</Badge>
+                  </div>
+                  <p className="font-bold text-sm truncate" title={weakestDomain?.name}>{weakestDomain?.shorthand || 'N/A'}</p>
+                </Card>
+
               </div>
             </div>
 

@@ -23,56 +23,58 @@ export default function Leaderboard() {
     useEffect(() => {
         async function fetchLeaderboard() {
             try {
-                // This is a complex query that would ideally be a view in Supabase
-                // For now, we'll fetch profiles and streaks and join them
-                const { data: streaks, error: streakError } = await supabase
+                // 1. Fetch all profiles (limit to 100 for performance/relevance)
+                const { data: profiles, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('id, display_name, avatar_url')
+                    .limit(100);
+
+                if (profileError) throw profileError;
+
+                // 2. Fetch all streaks
+                const { data: streaks } = await supabase
                     .from('user_streaks')
-                    .select(`
-            user_id,
-            current_streak,
-            longest_streak,
-            profiles (
-              display_name,
-              avatar_url
-            )
-          `)
-                    .order('current_streak', { ascending: false })
-                    .limit(20);
+                    .select('user_id, current_streak');
 
-                if (streakError) throw streakError;
-
-                // Fetch mastery to calculate points
+                // 3. Fetch mastery data
                 const { data: mastery } = await supabase
                     .from('mastery_progress')
                     .select('user_id, mastery_level, correct_attempts');
 
-                // Aggregate points: (mastery_level * 100) + (correct_attempts * 10) + (streak * 50)
-                const userPoints = new Map<string, number>();
-                const userCorrect = new Map<string, number>();
-                const userTotal = new Map<string, number>();
+                // 4. Map Data
+                const streakMap = new Map<string, number>();
+                streaks?.forEach(s => streakMap.set(s.user_id, s.current_streak));
 
+                const pointsMap = new Map<string, number>();
                 mastery?.forEach(m => {
-                    const current = userPoints.get(m.user_id) || 0;
-                    userPoints.set(m.user_id, current + (m.mastery_level * 100));
-
-                    const correct = userCorrect.get(m.user_id) || 0;
-                    userCorrect.set(m.user_id, correct + m.correct_attempts);
+                    const current = pointsMap.get(m.user_id) || 0;
+                    // Formula: Level * 100 + Correct * 10
+                    pointsMap.set(m.user_id, current + (m.mastery_level * 100) + (m.correct_attempts * 10));
                 });
 
-                const formattedEntries: LeaderboardEntry[] = (streaks || []).map((s, index) => {
-                    const points = (userPoints.get(s.user_id) || 0) + (s.current_streak * 50);
-                    return {
-                        user_id: s.user_id,
-                        display_name: (s.profiles as any)?.display_name || 'Anonymous Broker',
-                        avatar_url: (s.profiles as any)?.avatar_url || null,
-                        total_points: points,
-                        current_streak: s.current_streak,
-                        accuracy: 0, // Would need more queries to be fully accurate
-                        rank: index + 1,
-                    };
-                }).sort((a, b) => b.total_points - a.total_points);
+                // 5. Build Entries
+                const formattedEntries: LeaderboardEntry[] = (profiles || []).map((p) => {
+                    const streak = streakMap.get(p.id) || 0;
+                    const basePoints = pointsMap.get(p.id) || 0;
+                    const totalPoints = basePoints + (streak * 50);
 
-                setEntries(formattedEntries);
+                    return {
+                        user_id: p.id,
+                        display_name: p.display_name || 'Anonymous Broker',
+                        avatar_url: p.avatar_url,
+                        total_points: totalPoints,
+                        current_streak: streak,
+                        accuracy: 0,
+                        rank: 0, // Assigned after sort
+                    };
+                });
+
+                // 6. Sort and Rank
+                const sortedEntries = formattedEntries
+                    .sort((a, b) => b.total_points - a.total_points)
+                    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+
+                setEntries(sortedEntries);
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);
             } finally {
@@ -116,7 +118,7 @@ export default function Leaderboard() {
                                     <Card
                                         key={entry.user_id}
                                         className={`relative overflow-hidden border-none shadow-xl transition-all hover:scale-105 ${isWinner ? 'bg-gradient-to-br from-primary/20 via-primary/5 to-transparent ring-2 ring-primary order-1 md:order-2 md:translate-y-[-20px]' :
-                                                entry.rank === 2 ? 'order-2 md:order-1' : 'order-3'
+                                            entry.rank === 2 ? 'order-2 md:order-1' : 'order-3'
                                             }`}
                                     >
                                         <CardContent className="pt-10 text-center">
