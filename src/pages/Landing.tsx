@@ -21,32 +21,32 @@ const features = [
   {
     icon: Brain,
     title: 'Adaptive Practice Tests',
-    description: 'Our questions adapt to your performance, focusing on high-weight CFR domains where you need the most improvement.',
+    description: 'Our system learns your weak spots. The algorithm targets high-yield 19 CFR domains where you need improvement.',
   },
   {
-    icon: Clock,
-    title: 'Anki-Style Spaced Repetition',
-    description: 'Scientifically-proven algorithm ensures you review customs definitions and HTSUS rules at optimal intervals.',
+    icon: Calendar,
+    title: 'Smart Study Planner',
+    description: 'Input your exam date and schedule. We generate a personalized weekly roadmap to keep you on track.',
   },
   {
     icon: Target,
-    title: 'CBLE Practice Questions 2026',
-    description: 'Comprehensive question bank covering all 8 domains with detailed legal rationales based on current CBP regulations.',
+    title: 'Custom Quiz Builder',
+    description: 'Create tailored practice sessions by domain, difficulty, and question count. Focus exactly where you need it.',
   },
   {
     icon: BarChart3,
     title: 'Exam Readiness Analytics',
-    description: 'Track mastery by 19 CFR part, identify patterns, and monitor your probability of passing the actual license exam.',
+    description: 'Track mastery by 19 CFR part. Our "Confidence Gap" metric reveals where you are overconfident vs. accurate.',
   },
   {
     icon: Zap,
-    title: 'Quick Drill Mode',
-    description: '5-minute micro-sessions designed for busy schedules, covering high-frequency exam topics like Valuation and Entry.',
+    title: 'Navigation Drill Games',
+    description: 'Gamified rapid-fire drills to memorize 19 CFR parts, CBP Form numbers, and timelines in seconds.',
   },
   {
     icon: Shield,
     title: 'Realistic Exam Simulators',
-    description: 'Timed 80-question simulations that mirror the official US Customs Broker License Exam environment.',
+    description: 'Full 4.5-hour timed exams with 80 questions. Simulate the pressure of test day before it counts.',
   },
 ];
 
@@ -180,29 +180,91 @@ export default function Landing() {
             </div>
 
             <div className="relative">
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 p-8 md:p-12">
-                <div className="h-full w-full rounded-2xl bg-card shadow-xl p-6 flex flex-col justify-center">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Overall Mastery</span>
-                      <span className="text-2xl font-bold text-primary">72%</span>
-                    </div>
-                    <div className="h-3 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full w-[72%] rounded-full gradient-primary" />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 pt-4">
-                      {[78, 65, 82, 70, 75, 60, 85, 68].map((val, i) => (
-                        <div key={i} className="text-center">
-                          <div className="mx-auto h-16 w-2 rounded-full bg-muted overflow-hidden">
-                            <div
-                              className="w-full rounded-full gradient-primary transition-all"
-                              style={{ height: `${val}%`, marginTop: `${100 - val}%` }}
-                            />
+              {/* Interactive System Preview */}
+              <div className="rounded-3xl border bg-card shadow-2xl overflow-hidden">
+                <div className="border-b bg-muted/50 p-2 flex gap-2 overflow-x-auto">
+                  <div className="flex gap-1.5 ml-2">
+                    <div className="h-3 w-3 rounded-full bg-red-400/80" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-400/80" />
+                    <div className="h-3 w-3 rounded-full bg-green-400/80" />
+                  </div>
+                  <div className="ml-4 flex-1 rounded-md bg-background/50 px-3 py-1 text-xs text-muted-foreground text-center font-mono">
+                    app.cbletest.com/dashboard
+                  </div>
+                </div>
+
+                <div className="p-6 md:p-8 bg-slate-50 dark:bg-slate-950/50 min-h-[400px]">
+                  {/* Mock Dashboard View */}
+                  <div className="space-y-6">
+                    {/* Top Stats Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
+                            <Target className="h-5 w-5" />
                           </div>
-                          <span className="text-xs text-muted-foreground mt-1">D{i + 1}</span>
+                          <div>
+                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">72%</div>
+                            <div className="text-[10px] uppercase font-bold text-slate-400">Accuracy</div>
+                          </div>
                         </div>
-                      ))}
+                      </div>
+                      <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            <Zap className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">145</div>
+                            <div className="text-[10px] uppercase font-bold text-slate-400">Drills</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Chart Area */}
+                    <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+                      <div className="mb-4 flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-sm">Exam Readiness</h4>
+                          <p className="text-xs text-slate-400">Last 7 days performance</p>
+                        </div>
+                        <div className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold">+12%</div>
+                      </div>
+                      <div className="h-24 flex items-end gap-2 px-2">
+                        {[40, 65, 45, 70, 85, 60, 75].map((h, i) => (
+                          <div key={i} className="flex-1 rounded-t-sm bg-indigo-500/20 hover:bg-indigo-500 transition-colors relative group">
+                            <div className="absolute bottom-0 w-full bg-indigo-500 rounded-t-sm transition-all duration-500" style={{ height: `${h}%` }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recommended Action */}
+                    <div className="rounded-xl bg-indigo-600 p-4 text-white shadow-lg shadow-indigo-500/20">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-sm">Daily Goal</h4>
+                          <p className="text-xs text-indigo-200">20 questions on Valuation</p>
+                        </div>
+                        <Button size="sm" variant="secondary" className="text-xs h-8">
+                          Start Now
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Badge */}
+              <div className="absolute -bottom-6 -right-6 rounded-xl bg-background p-4 shadow-xl border animate-bounce-slow hidden md:block">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Concept Mastered!</p>
+                    <p className="text-xs text-muted-foreground">GRI 3(b) Essential Character</p>
                   </div>
                 </div>
               </div>
