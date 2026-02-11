@@ -1,40 +1,48 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>CBLETest - Ace Your Customs Broker License Exam</title>
-    <meta name="description" content="Master the Customs Broker License Exam (CBLE) with CBLETest. Proven spaced-repetition flashcards, realistic practice questions, and adaptive study plans updated for 2026." />
-    <meta name="keywords" content="Customs Broker License Exam, CBLE practice test, CBLE study guide, customs broker exam prep, 19 CFR practice questions, HTSUS classification practice" />
-    <meta name="author" content="CBLETest" />
 
-    <!-- Open Graph / SEO -->
-    <meta property="og:title" content="CBLETest - The Ultimate Customs Broker Exam Prep" />
-    <meta property="og:description" content="Scientifically-backed CBLE prep. Adaptive flashcards and realistic simulations to help you pass the exam on your first try." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/og-image.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- TODO: Set the document title to the name of your application -->
+  <title>CBLETest - Ace Your Customs Broker License Exam</title>
+  <meta name="description"
+    content="Master the Customs Broker License Exam (CBLE) with CBLETest. Proven spaced-repetition flashcards, realistic practice questions, and adaptive study plans updated for 2026." />
+  <meta name="keywords"
+    content="Customs Broker License Exam, CBLE practice test, CBLE study guide, customs broker exam prep, 19 CFR practice questions, HTSUS classification practice" />
+  <meta name="author" content="CBLETest" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@CBLETest" />
-    <meta name="twitter:image" content="/og-image.png" />
+  <!-- Open Graph / SEO -->
+  <meta property="og:title" content="CBLETest - The Ultimate Customs Broker Exam Prep" />
+  <meta property="og:description"
+    content="Scientifically-backed CBLE prep. Adaptive flashcards and realistic simulations to help you pass the exam on your first try." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/og-image.png" />
 
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#6366F1" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  </head>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@CBLETest" />
+  <meta name="twitter:image" content="/og-image.png" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
-        });
-      }
-    </script>
-  </body>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="theme-color" content="#6366F1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => { });
+      });
+    }
+  </script>
+</body>
+
 </html>

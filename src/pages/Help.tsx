@@ -1,15 +1,13 @@
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
-    Book,
     Settings,
     Brain,
-    Target,
     Zap,
-    Clock,
     Library,
     BarChart,
-    Calendar,
     Smartphone,
     ChevronRight,
     HelpCircle
@@ -117,7 +115,7 @@ export default function Help() {
         <Layout>
             <div className="container py-12 max-w-5xl animate-fade-in">
                 <div className="text-center mb-16">
-                    <Badge className="mb-4 py-1.5 px-4 bg-primary/10 text-primary border-primary/20">
+                    <Badge variant="secondary" className="mb-4 py-1.5 px-4 bg-primary/10 text-primary border-none">
                         <HelpCircle className="w-4 h-4 mr-2" />
                         Support Center
                     </Badge>
@@ -131,7 +129,7 @@ export default function Help() {
 
                 <div className="grid gap-8 lg:grid-cols-12">
                     {/* Sidebar Nav */}
-                    <aside className="lg:col-span-3 space-y-2">
+                    <aside className="lg:col-span-3 space-y-2 text-left">
                         <div className="sticky top-24">
                             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 px-3">Categories</p>
                             {sections.map((section) => (
@@ -168,7 +166,7 @@ export default function Help() {
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <p className="text-muted-foreground leading-relaxed">
+                                                <p className="text-muted-foreground leading-relaxed text-left">
                                                     {article.content}
                                                 </p>
                                             </CardContent>
@@ -181,8 +179,8 @@ export default function Help() {
                         {/* Final CTA */}
                         <div className="mt-20 p-8 rounded-3xl bg-gradient-to-br from-primary to-indigo-600 text-white text-center shadow-xl shadow-primary/20">
                             <h3 className="text-2xl font-bold mb-2">Still have questions?</h3>
-                            <p className="text-indigo-100 mb-6">Our team of licensed brokers is here to help you navigate the prep process.</p>
-                            <Button variant="secondary" className="bg-white text-primary hover:bg-white/90 font-bold px-8" asChild>
+                            <p className="text-indigo-100 mb-6 font-medium">Our team of licensed brokers is here to help you navigate the prep process.</p>
+                            <Button variant="secondary" className="bg-white text-primary hover:bg-white/90 font-bold px-8 shadow-lg" asChild>
                                 <a href="mailto:support@cbletest.com">Contact Support</a>
                             </Button>
                         </div>
@@ -190,13 +188,5 @@ export default function Help() {
                 </div>
             </div>
         </Layout>
-    );
-}
-
-function Badge({ children, className }: { children: React.ReactNode, className?: string }) {
-    return (
-        <div className={`inline-flex items-center rounded-full border text-xs font-semibold transition-colors ${className}`}>
-            {children}
-        </div>
     );
 }
