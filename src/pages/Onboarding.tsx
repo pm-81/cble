@@ -136,7 +136,7 @@ export default function Onboarding() {
             </p>
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
               <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
-                200+ Practice Questions
+                460+ Practice Questions
               </Badge>
               <Badge variant="secondary" className="px-3 py-1 bg-primary/5 text-primary border-primary/10">
                 Spaced Repetition SM-2
