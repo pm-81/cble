@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Loader2, AlertCircle } from 'lucide-react';
+import { BookOpen, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { z } from 'zod';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -27,6 +27,9 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const passwordValid = useMemo(() => password.length >= 6, [password]);
 
   // Redirect if authenticated (unless in reset flow)
   useEffect(() => {
@@ -43,10 +46,19 @@ export default function Auth() {
     }
   }, [mode]);
 
+  const clearMessages = () => {
+    setError(null);
+    setSuccess(null);
+  };
+
   const validateForm = (): boolean => {
     try {
       if (activeTab === 'signin' || activeTab === 'signup' || activeTab === 'forgot_password') {
-        if (activeTab !== 'update_password') emailSchema.parse(email);
+        if (activeTab !== 'update_password' && activeTab !== 'forgot_password') {
+          emailSchema.parse(email);
+        } else if (activeTab === 'forgot_password') {
+          emailSchema.parse(email);
+        }
       }
       if (activeTab === 'signin' || activeTab === 'signup' || activeTab === 'update_password') {
         passwordSchema.parse(password);
@@ -62,7 +74,7 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearMessages();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -80,7 +92,7 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearMessages();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -96,13 +108,13 @@ export default function Auth() {
     } else {
       setSuccess('Account created successfully! You can now sign in.');
       setActiveTab('signin');
+      setPassword(''); // Clear password after signup
     }
   };
 
   const handleResetRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
+    clearMessages();
 
     try {
       emailSchema.parse(email);
@@ -124,7 +136,7 @@ export default function Auth() {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearMessages();
     try {
       passwordSchema.parse(password);
     } catch (err) {
@@ -174,7 +186,7 @@ export default function Auth() {
 
       {/* Auth Card */}
       <div className="flex flex-1 items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-xl">
+        <Card className="w-full max-w-md shadow-xl border-none">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-2xl">
               {activeTab === 'signin' && 'Welcome Back'}
@@ -194,16 +206,37 @@ export default function Auth() {
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    placeholder="At least 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="new-password"
-                    minLength={6}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 6 characters"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      required
+                      autoComplete="new-password"
+                      minLength={6}
+                      autoFocus
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className={`h-1 flex-1 rounded-full transition-colors ${passwordValid ? 'bg-success' : password.length > 0 ? 'bg-warning' : 'bg-muted'}`} />
+                    <span className={`text-[10px] font-medium uppercase tracking-wider ${passwordValid ? 'text-success' : 'text-muted-foreground'}`}>
+                      {passwordValid ? 'Strong enough' : 'Min. 6 chars'}
+                    </span>
+                  </div>
                 </div>
                 {error && (
                   <Alert variant="destructive">
@@ -212,18 +245,18 @@ export default function Auth() {
                   </Alert>
                 )}
                 {success && (
-                  <Alert className="border-success bg-success/10">
-                    <AlertDescription className="text-success">{success}</AlertDescription>
+                  <Alert className="border-success bg-success/10 text-success">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>{success}</AlertDescription>
                   </Alert>
                 )}
-                <Button type="submit" className="w-full gradient-primary" disabled={isSubmitting}>
+                <Button type="submit" className="w-full gradient-primary shadow-lg" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Password'}
                 </Button>
               </form>
             ) : (
               <Tabs value={activeTab === 'forgot_password' ? 'signin' : activeTab} onValueChange={(val) => {
-                setError(null);
-                setSuccess(null);
+                clearMessages();
                 setActiveTab(val);
               }}>
                 <TabsList className="grid w-full grid-cols-2">
@@ -238,23 +271,37 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                {success && (
-                  <Alert className="mt-4 border-success bg-success/10">
-                    <AlertDescription className="text-success">{success}</AlertDescription>
+                {success && ( activeTab !== 'signin' || !success.includes('created') ) && (
+                  <Alert className="mt-4 border-success bg-success/10 text-success">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>{success}</AlertDescription>
+                  </Alert>
+                )}
+                
+                {/* Special case for showing signup success on signin tab */}
+                {activeTab === 'signin' && success?.includes('created') && (
+                  <Alert className="mt-4 border-success bg-success/10 text-success">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>{success}</AlertDescription>
                   </Alert>
                 )}
 
                 {activeTab === 'forgot_password' ? (
-                  <form onSubmit={handleResetRequest} className="space-y-4 mt-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <form onSubmit={handleResetRequest} className="space-y-4 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="space-y-2">
                       <Label htmlFor="reset-email">Email Address</Label>
                       <Input
                         id="reset-email"
                         type="email"
+                        inputMode="email"
                         placeholder="you@example.com"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (error) setError(null);
+                        }}
                         required
+                        autoFocus
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -273,11 +320,16 @@ export default function Auth() {
                           <Input
                             id="signin-email"
                             type="email"
+                            inputMode="email"
                             placeholder="you@example.com"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              if (error) setError(null);
+                            }}
                             required
                             autoComplete="email"
+                            autoFocus={activeTab === 'signin'}
                           />
                         </div>
                         <div className="space-y-2">
@@ -286,24 +338,38 @@ export default function Auth() {
                             <button
                               type="button"
                               onClick={() => setActiveTab('forgot_password')}
-                              className="text-xs text-primary hover:underline"
+                              className="text-xs text-primary hover:underline font-medium"
                             >
                               Forgot password?
                             </button>
                           </div>
-                          <Input
-                            id="signin-password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoComplete="current-password"
-                          />
+                          <div className="relative">
+                            <Input
+                              id="signin-password"
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="••••••••"
+                              value={password}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                                if (error) setError(null);
+                              }}
+                              required
+                              autoComplete="current-password"
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                         <Button
                           type="submit"
-                          className="w-full gradient-primary"
+                          className="w-full gradient-primary shadow-lg"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? (
@@ -327,8 +393,12 @@ export default function Auth() {
                             type="text"
                             placeholder="Your name"
                             value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
+                            onChange={(e) => {
+                              setDisplayName(e.target.value);
+                              if (error) setError(null);
+                            }}
                             autoComplete="name"
+                            autoFocus={activeTab === 'signup'}
                           />
                         </div>
                         <div className="space-y-2">
@@ -336,29 +406,53 @@ export default function Auth() {
                           <Input
                             id="signup-email"
                             type="email"
+                            inputMode="email"
                             placeholder="you@example.com"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              if (error) setError(null);
+                            }}
                             required
                             autoComplete="email"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="signup-password">Password</Label>
-                          <Input
-                            id="signup-password"
-                            type="password"
-                            placeholder="At least 6 characters"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoComplete="new-password"
-                            minLength={6}
-                          />
+                          <div className="relative">
+                            <Input
+                              id="signup-password"
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="At least 6 characters"
+                              value={password}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                                if (error) setError(null);
+                              }}
+                              required
+                              autoComplete="new-password"
+                              minLength={6}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                              tabIndex={-1}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className={`h-1 flex-1 rounded-full transition-colors ${passwordValid ? 'bg-success' : password.length > 0 ? 'bg-warning' : 'bg-muted'}`} />
+                            <span className={`text-[10px] font-medium uppercase tracking-wider ${passwordValid ? 'text-success' : 'text-muted-foreground'}`}>
+                              {passwordValid ? 'Strong enough' : 'Min. 6 chars'}
+                            </span>
+                          </div>
                         </div>
                         <Button
                           type="submit"
-                          className="w-full gradient-primary"
+                          className="w-full gradient-primary shadow-lg"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? (
@@ -377,8 +471,8 @@ export default function Auth() {
               </Tabs>
             )}
 
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              By continuing, you agree to our Terms of Service and Privacy Policy.
+            <p className="mt-8 text-center text-[10px] text-muted-foreground leading-relaxed">
+              By continuing, you agree to our <Link to="/terms" className="underline hover:text-primary">Terms of Service</Link> and <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
             </p>
           </CardContent>
         </Card>

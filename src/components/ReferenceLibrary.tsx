@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,7 +17,8 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Search, ExternalLink } from 'lucide-react';
+import { BookOpen, Search, ExternalLink, Database, FileText, Scale } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CFRReference {
     part: string;
@@ -243,6 +244,11 @@ export function ReferenceLibrary({ currentReference, trigger }: ReferenceLibrary
     const [searchQuery, setSearchQuery] = useState(currentReference || '');
     const [isOpen, setIsOpen] = useState(false);
 
+    // Update internal search state if prop changes (e.g. from parent popup)
+    useEffect(() => {
+        if (currentReference) setSearchQuery(currentReference);
+    }, [currentReference]);
+
     const filteredReferences = cfrReferences.filter(ref => {
         const query = searchQuery.toLowerCase();
         return (
@@ -255,10 +261,10 @@ export function ReferenceLibrary({ currentReference, trigger }: ReferenceLibrary
 
     const getWeightColor = (weight: string) => {
         switch (weight) {
-            case 'High': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-            case 'Medium': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
-            case 'Low': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'High': return 'bg-destructive/10 text-destructive border-destructive/20';
+            case 'Medium': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
+            case 'Low': return 'bg-success/10 text-success border-success/20';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -266,75 +272,95 @@ export function ReferenceLibrary({ currentReference, trigger }: ReferenceLibrary
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
                 {trigger || (
-                    <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2 rounded-xl backdrop-blur-sm bg-background/50">
                         <BookOpen className="h-4 w-4" />
                         Reference Library
                     </Button>
                 )}
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader>
-                    <SheetTitle className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-primary" />
-                        CFR Reference Library
+            <SheetContent className="w-full sm:max-w-xl p-0 border-l border-border/50 bg-card/95 backdrop-blur-3xl shadow-2xl">
+                <SheetHeader className="px-6 py-6 border-b border-border/50 bg-muted/20">
+                    <SheetTitle className="flex items-center gap-2 font-display text-xl font-bold uppercase tracking-tight">
+                        <Scale className="h-5 w-5 text-primary" />
+                        CFR Reference Core
                     </SheetTitle>
-                    <SheetDescription>
-                        Quick lookup of 19 CFR regulations and HTSUS rules commonly tested on the CBLE.
+                    <SheetDescription className="text-xs font-medium text-muted-foreground/80 uppercase tracking-widest">
+                        Tactical Regulations Database
                     </SheetDescription>
                 </SheetHeader>
 
-                <div className="mt-6 space-y-4">
+                <div className="flex flex-col h-full bg-background/50">
                     {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search references (e.g., '111.23', 'protest', 'GRI')"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10"
-                        />
+                    <div className="p-4 border-b border-border/30 bg-card/50">
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Query database (e.g., '111.23' or 'drawback')"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-11 h-12 rounded-xl bg-background border-border/40 focus:bg-background transition-all font-mono text-sm"
+                            />
+                        </div>
                     </div>
 
                     {/* Results */}
-                    <ScrollArea className="h-[calc(100vh-250px)]">
-                        <Accordion type="single" collapsible className="w-full">
+                    <ScrollArea className="flex-1 px-4">
+                        <Accordion type="single" collapsible className="w-full py-4 space-y-3">
                             {filteredReferences.map((ref, index) => (
-                                <AccordionItem key={index} value={`item-${index}`}>
-                                    <AccordionTrigger className="hover:no-underline">
-                                        <div className="flex items-center gap-3 text-left">
-                                            <div>
-                                                <div className="font-semibold">{ref.part}</div>
-                                                <div className="text-sm text-muted-foreground">{ref.title}</div>
+                                <AccordionItem
+                                    key={index}
+                                    value={`item-${index}`}
+                                    className="border border-border/40 rounded-xl bg-card overflow-hidden transition-all data-[state=open]:border-primary/30 data-[state=open]:shadow-lg"
+                                >
+                                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30 group">
+                                        <div className="flex items-center gap-4 text-left w-full">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-105 transition-transform">
+                                                <FileText className="h-5 w-5" />
                                             </div>
-                                            <Badge className={`ml-auto shrink-0 ${getWeightColor(ref.examWeight)}`}>
-                                                {ref.examWeight}
+                                            <div className="flex-1">
+                                                <div className="font-mono text-sm font-bold text-primary group-hover:text-foreground transition-colors">
+                                                    {ref.part}
+                                                </div>
+                                                <div className="text-xs font-medium text-muted-foreground truncate max-w-[180px] sm:max-w-[240px]">
+                                                    {ref.title}
+                                                </div>
+                                            </div>
+                                            <Badge variant="outline" className={cn("ml-auto shrink-0 text-[10px] uppercase font-bold tracking-wider", getWeightColor(ref.examWeight))}>
+                                                {ref.examWeight} Priority
                                             </Badge>
                                         </div>
                                     </AccordionTrigger>
-                                    <AccordionContent>
-                                        <div className="space-y-3 pt-2">
-                                            <p className="text-sm text-muted-foreground">{ref.description}</p>
-                                            <div className="space-y-1.5">
-                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                                    Key Points
+                                    <AccordionContent className="px-4 pb-4 pt-0">
+                                        <div className="pl-14 pr-2 space-y-4">
+                                            <div className="p-3 rounded-lg bg-muted/30 text-sm leading-relaxed text-foreground/90 border border-border/30">
+                                                {ref.description}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                    <Database className="h-3 w-3" /> Key Citations
                                                 </h4>
-                                                <ul className="space-y-1">
+                                                <ul className="space-y-2">
                                                     {ref.keyPoints.map((point, i) => (
-                                                        <li key={i} className="text-sm flex items-start gap-2">
-                                                            <span className="text-primary mt-1">•</span>
+                                                        <li key={i} className="text-xs font-medium flex items-start gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0 opacity-50" />
                                                             <span>{point}</span>
                                                         </li>
                                                     ))}
                                                 </ul>
                                             </div>
-                                            <a
-                                                href={`https://www.ecfr.gov/current/title-19`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                                            >
-                                                View on eCFR <ExternalLink className="h-3 w-3" />
-                                            </a>
+
+                                            <div className="pt-2 flex justify-end">
+                                                <Button size="sm" variant="ghost" asChild className="h-8 text-xs gap-1 hover:text-primary">
+                                                    <a
+                                                        href={`https://www.ecfr.gov/current/title-19`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Access Source <ExternalLink className="h-3 w-3" />
+                                                    </a>
+                                                </Button>
+                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -342,9 +368,12 @@ export function ReferenceLibrary({ currentReference, trigger }: ReferenceLibrary
                         </Accordion>
 
                         {filteredReferences.length === 0 && (
-                            <div className="py-8 text-center text-muted-foreground">
-                                <p>No references found for "{searchQuery}"</p>
-                                <p className="text-sm mt-1">Try a different search term</p>
+                            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground space-y-4">
+                                <Search className="h-12 w-12 opacity-20" />
+                                <div>
+                                    <p className="font-medium">No citations found</p>
+                                    <p className="text-xs mt-1">Refine search vector: "{searchQuery}"</p>
+                                </div>
                             </div>
                         )}
                     </ScrollArea>

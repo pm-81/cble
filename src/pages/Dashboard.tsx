@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { ExamReadinessScore } from '@/components/ExamReadinessScore';
 import { LevelProgress } from '@/components/Gamification/LevelProgress';
 import { AchievementsList } from '@/components/Gamification/AchievementsList';
@@ -22,8 +23,14 @@ import {
   BookOpen,
   BarChart3,
   CheckCircle2,
-  Database
+  Database,
+  AlertTriangle,
+  Rocket,
+  Shield,
+  Activity,
+  Layers
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DashboardData {
   profile: {
@@ -116,7 +123,7 @@ export default function Dashboard() {
             const acc = stats.correct / stats.total;
             if (acc > maxAccuracy) {
               maxAccuracy = acc;
-              strongestDomain = domainId; // Ideally we'd map this to a name, but ID works for a boolean check in achievements 
+              strongestDomain = domainId;
             }
           }
         });
@@ -133,7 +140,7 @@ export default function Dashboard() {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Set basic data even on error to prevent crash
+        // Set basic data even on error
         setData({
           profile: null,
           streak: null,
@@ -178,269 +185,218 @@ export default function Dashboard() {
 
   return (
     <Layout showFooter={false}>
-      <div className="container py-8">
-        {/* Setup Wizard Banner */}
-        {data?.questionsCount === 0 && (
-          <div className="mb-8 rounded-2xl bg-amber-50 border border-amber-200 p-6 dark:bg-amber-900/20 dark:border-amber-800">
-            <div className="flex gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-800/30 dark:text-amber-400">
-                <Database className="h-6 w-6" />
+      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-background via-background to-primary/5 py-8 px-4">
+        <div className="container max-w-7xl mx-auto space-y-8">
+
+          {/* ALERT: SEEDING REQUIRED */}
+          {data?.questionsCount === 0 && (
+            <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-6 flex items-start gap-4 animate-in slide-in-from-top-4 backdrop-blur-sm">
+              <div className="p-3 rounded-xl bg-destructive/10 text-destructive">
+                <AlertTriangle className="h-6 w-6" />
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">Setup Required</h2>
-                <p className="text-amber-700 dark:text-amber-300 mt-1">
-                  It looks like your database hasn't been seeded yet. You need content to start studying!
+              <div className="space-y-1">
+                <h3 className="font-display font-bold text-destructive flex items-center gap-2">
+                  System Alert: Database Empty
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  The tactical database has not been seeded. Please initialize content to begin training operations.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
-                    <Link to="/admin">Go to Admin Portal</Link>
+                <div className="pt-2 flex items-center gap-2">
+                  <Button variant="destructive" size="sm" asChild className="rounded-xl font-bold uppercase tracking-wider text-[10px]">
+                    <Link to="/admin">Initialize via Admin</Link>
                   </Button>
-                  <code className="px-2 py-1 bg-amber-100 dark:bg-amber-800/40 rounded text-xs flex items-center">
-                    npm run seed
-                  </code>
+                  <code className="px-2 py-1 bg-muted rounded text-[10px] font-mono">npm run seed</code>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Welcome & Quick Actions */}
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-bold">
-              Welcome back{data?.profile?.display_name ? `, ${data.profile.display_name}` : ''}!
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              {daysUntilExam !== null && daysUntilExam > 0
-                ? `${daysUntilExam} days until your exam. Let's make progress today!`
-                : "Ready to study? Let's keep building your mastery."}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" asChild>
-              <Link to="/study?mode=2min" className="gap-2">
-                <Zap className="h-4 w-4" />
-                2-Min Save
-              </Link>
-            </Button>
-            <Button asChild className="gradient-primary shadow-glow">
-              <Link to="/study" className="gap-2">
-                <Play className="h-4 w-4" />
-                Start Session
+          {/* HERO: MISSION CONTROL */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 pb-6 border-b border-border/40 animate-in fade-in duration-700">
+            <div className="space-y-2">
+              <Badge variant="outline" className="w-fit bg-primary/5 text-primary border-primary/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em]">
+                Mission Control
+              </Badge>
+              <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight text-foreground">
+                Welcome back, <span className="text-primary italic">{data?.profile?.display_name || 'Candidate'}</span>
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl">
+                Your neural feedback loop is active. {daysUntilExam !== null ? `Target acquisition (Exam) in ${daysUntilExam} days.` : 'Systems nominal.'}
+              </p>
+            </div>
+
+            <Button size="lg" asChild className="h-14 px-8 rounded-2xl gradient-primary shadow-glow text-background font-black uppercase tracking-widest hover:scale-105 transition-transform">
+              <Link to="/study?mode=quick_drill" className="gap-2">
+                <Rocket className="h-5 w-5" />
+                Quick Launch
               </Link>
             </Button>
           </div>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="mb-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="card-premium group hover:translate-y-[-4px]">
-            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
-                <Flame className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-3xl font-black">{data?.streak?.current_streak || 0}</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Day Streak</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-premium group hover:translate-y-[-4px]">
-            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success group-hover:scale-110 transition-transform">
-                <Target className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-3xl font-black">{accuracyRate}%</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Accuracy</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-premium group hover:translate-y-[-4px]">
-            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-info/10 text-info group-hover:scale-110 transition-transform">
-                <Brain className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-3xl font-black">{data?.totalAttempts || 0}</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Drills</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-premium group hover:translate-y-[-4px]">
-            <CardContent className="flex items-center gap-5 p-6 bg-gradient-to-br from-card to-white/5 dark:from-card dark:to-white/5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-7 w-7" />
-              </div>
-              <div>
-                <p className="text-3xl font-black">{data?.attemptsToday || 0}</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Today's Progress</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Exam Readiness Score */}
-          <ExamReadinessScore userId={user.id} />
-          {/* Today's Plan */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Today's Study Plan
-              </CardTitle>
-              <CardDescription>
-                Recommended activities based on your progress
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Link to="/study?mode=quick_drill" className="block">
-                  <div className="group rounded-xl border p-4 transition-all hover:border-primary hover:shadow-md">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Brain className="h-5 w-5" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">~15 min</span>
-                    </div>
-                    <h3 className="font-semibold">Quick Drill</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Adaptive practice tests focusing on weak 19 CFR domains and HTSUS classification.
-                    </p>
+          {/* STATS: COMMAND CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Day Streak', value: data?.streak?.current_streak || 0, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              { label: 'Global Accuracy', value: `${accuracyRate}%`, icon: Target, color: 'text-success', bg: 'bg-success/10' },
+              { label: 'Scenarios Run', value: data?.totalAttempts || 0, icon: Activity, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+              { label: 'Daily Ops', value: data?.attemptsToday || 0, icon: TrendingUp, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+            ].map((stat, i) => (
+              <Card key={i} className="border-none shadow-xl bg-card/60 backdrop-blur-xl hover:bg-card/80 transition-colors group">
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</p>
+                    <p className="font-display text-3xl font-black">{stat.value}</p>
                   </div>
-                </Link>
-
-                <Link to="/flashcards" className="block">
-                  <div className="group rounded-xl border p-4 transition-all hover:border-primary hover:shadow-md">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-                        <BookOpen className="h-5 w-5" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">~10 min</span>
-                    </div>
-                    <h3 className="font-semibold">Flashcard Review</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Spaced repetition for customs definitions and legal key terms.
-                    </p>
+                  <div className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
+                    <stat.icon className="h-6 w-6" />
                   </div>
-                </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                <Link to="/study?mode=mixed_review" className="block">
-                  <div className="group rounded-xl border p-4 transition-all hover:border-primary hover:shadow-md">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-info/10 text-info">
-                        <BarChart3 className="h-5 w-5" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">~20 min</span>
-                    </div>
-                    <h3 className="font-semibold">Mixed Review</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Interleaved practice across all 8 Customs Broker Exam domains.
-                    </p>
-                  </div>
-                </Link>
-
-                <Link to="/study?mode=exam_simulation" className="block">
-                  <div className="group rounded-xl border p-4 transition-all hover:border-primary hover:shadow-md">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                        <Clock className="h-5 w-5" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">~90 min</span>
-                    </div>
-                    <h3 className="font-semibold">Exam Simulation</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Timed 80-question CBLE simulation mirroring real exam conditions.
-                    </p>
-                  </div>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Progress Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Progress Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>Question Bank Coverage</span>
-                  <span className="font-medium">{progressPercent}%</span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LAUNCHPAD (Left Col) */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Exam Readiness */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" /> Readiness Assessment
+                  </h2>
                 </div>
-                <Progress value={Math.min(progressPercent, 100)} className="h-2" />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {data?.totalAttempts || 0} of {data?.questionsCount || 0} questions attempted
-                </p>
+                <ExamReadinessScore userId={user.id} />
               </div>
 
-              {daysUntilExam !== null && daysUntilExam > 0 && (
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full gradient-primary text-primary-foreground font-bold">
-                      {daysUntilExam}
-                    </div>
-                    <div>
-                      <p className="font-medium">Days Until Exam</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(data?.profile?.exam_date || '').toLocaleDateString()}
+              {/* Strategic Modules */}
+              <div className="space-y-4">
+                <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" /> Strategic Modules
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Card 1: Rapid Fire */}
+                  <Link to="/study?mode=quick_drill" className="group block h-full">
+                    <div className="relative overflow-hidden rounded-[2rem] bg-card border border-border/50 p-6 hover:border-primary/50 transition-all hover:shadow-lg h-full flex flex-col">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Zap className="h-24 w-24 text-primary -rotate-12" />
+                      </div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                          <Zap className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">Rapid Fire</h3>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. 15 Min</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium mt-auto">
+                        High-velocity drills targeting your weakest sub-domains. Built for speed and retention.
                       </p>
                     </div>
-                  </div>
+                  </Link>
+
+                  {/* Card 2: Knowledge Forge */}
+                  <Link to="/flashcards" className="group block h-full">
+                    <div className="relative overflow-hidden rounded-[2rem] bg-card border border-border/50 p-6 hover:border-secondary/50 transition-all hover:shadow-lg h-full flex flex-col">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <BookOpen className="h-24 w-24 text-secondary -rotate-12" />
+                      </div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                          <Brain className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">Knowledge Forge</h3>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. 10 Min</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium mt-auto">
+                        Spaced repetition system for definitions and key legal concepts.
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Card 3: Deep Dive */}
+                  <Link to="/study?mode=mixed_review" className="group block h-full">
+                    <div className="relative overflow-hidden rounded-[2rem] bg-card border border-border/50 p-6 hover:border-info/50 transition-all hover:shadow-lg h-full flex flex-col">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <BarChart3 className="h-24 w-24 text-info -rotate-12" />
+                      </div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-2xl bg-info/10 flex items-center justify-center text-info group-hover:scale-110 transition-transform">
+                          <BarChart3 className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">Deep Dive</h3>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. 20 Min</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium mt-auto">
+                        Interleaved practice across all 8 Customs Broker Exam domains.
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Card 4: Full Sim */}
+                  <Link to="/study?mode=exam_simulation" className="group block h-full">
+                    <div className="relative overflow-hidden rounded-[2rem] bg-card border border-border/50 p-6 hover:border-accent/50 transition-all hover:shadow-lg h-full flex flex-col">
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Clock className="h-24 w-24 text-accent -rotate-12" />
+                      </div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                          <Clock className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-lg">Full Sim</h3>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Est. 90 Min</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium mt-auto">
+                        80-question CBLE simulation mirroring real exam conditions.
+                      </p>
+                    </div>
+                  </Link>
                 </div>
-              )}
+              </div>
+            </div>
 
-              <div className="space-y-3">
-                <h4 className="font-medium text-sm">Recent Activity</h4>
-                {data?.attemptsToday && data.attemptsToday > 0 ? (
-                  <div className="flex items-center gap-3 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    <span>
-                      {data.correctToday}/{data.attemptsToday} correct today
-                    </span>
+            {/* SIDEBAR: CAREER PROFILE (Right Col) */}
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="border-none shadow-xl bg-card/60 backdrop-blur-xl h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-muted-foreground">
+                    <Target className="h-4 w-4 text-primary" /> Career Trajectory
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  <LevelProgress
+                    totalCorrect={data?.totalCorrect || 0}
+                    totalAttempts={data?.totalAttempts || 0}
+                    streak={data?.streak?.current_streak || 0}
+                  />
+
+                  <div className="pt-4 border-t border-border/50">
+                    <AchievementsList
+                      totalCorrect={data?.totalCorrect || 0}
+                      totalAttempts={data?.totalAttempts || 0}
+                      streak={data?.streak?.current_streak || 0}
+                      strongestDomain={data?.strongestDomain}
+                    />
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No practice yet today. Start a session!
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Gamification Panel */}
-          <Card className="flex flex-col h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Your Journey
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-6">
-              <LevelProgress
-                totalCorrect={data?.totalCorrect || 0}
-                totalAttempts={data?.totalAttempts || 0}
-                streak={data?.streak?.current_streak || 0}
-              />
-              <div className="border-t pt-4">
-                <AchievementsList
-                  totalCorrect={data?.totalCorrect || 0}
-                  totalAttempts={data?.totalAttempts || 0}
-                  streak={data?.streak?.current_streak || 0}
-                  strongestDomain={data?.strongestDomain}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="pt-4 border-t border-border/50">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold uppercase text-muted-foreground">Bank Coverage</span>
+                      <span className="text-xs font-bold">{progressPercent}%</span>
+                    </div>
+                    <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

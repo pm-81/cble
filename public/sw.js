@@ -27,8 +27,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Skip non-GET
-    if (event.request.method !== 'GET') return;
+    // Skip non-GET and non-HTTP/HTTPS
+    if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
     // API / Supabase calls — network only
     if (url.hostname.includes('supabase') || url.pathname.startsWith('/rest/') || url.pathname.startsWith('/auth/')) {

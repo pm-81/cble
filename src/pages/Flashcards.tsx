@@ -1,12 +1,17 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
 import {
   Loader2,
   RotateCcw,
@@ -21,10 +26,15 @@ import {
   Minus,
   Zap,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Plus,
+  Save,
+  Layers,
+  Brain,
+  Pencil,
+  GraduationCap
 } from 'lucide-react';
 import { calculateSM2, ratingToQuality } from '@/lib/spaced-repetition';
-
 import { FALLBACK_FLASHCARDS } from '@/lib/fallback-data';
 
 interface Flashcard {
@@ -43,12 +53,19 @@ interface FlashcardProgress {
   due_date: string;
 }
 
+interface Domain {
+  id: string;
+  name: string;
+}
+
 type Rating = 'again' | 'hard' | 'good' | 'easy';
+type Mode = 'review' | 'create';
 
 export default function Flashcards() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  const [mode, setMode] = useState<Mode>('review');
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [progress, setProgress] = useState<Map<string, FlashcardProgress>>(new Map());
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,230 +73,169 @@ export default function Flashcards() {
   const [loading, setLoading] = useState(true);
   const [reviewed, setReviewed] = useState<Set<string>>(new Set());
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [domains, setDomains] = useState<Domain[]>([]);
+
+  // Creator State
+  const [newFront, setNewFront] = useState('');
+  const [newBack, setNewBack] = useState('');
+  const [newReference, setNewReference] = useState('');
+  const [newDomain, setNewDomain] = useState<string>('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
+    if (!authLoading && !user) navigate('/auth');
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    async function fetchFlashcards() {
-      // Always allow fallback for better UX if auth fails or DB is empty
-      const isAuthMode = !!user;
+    async function fetchData() {
+      if (!user) return;
 
-      try {
-        setLoading(true);
+      // Fetch Domains
+      const { data: domainData } = await supabase.from('domains').select('id, name');
+      if (domainData) setDomains(domainData);
 
-        let finalCards: Flashcard[] = [];
-        let progressMap = new Map<string, FlashcardProgress>();
-        const reviewedIds = new Set<string>();
-
-        if (isAuthMode && user) {
-          // 1. Fetch user's flashcard progress for ALL cards
-          const { data: progressData } = await supabase
-            .from('flashcard_progress')
-            .select('*')
-            .eq('user_id', user.id);
-
-          // Create progress map
-          progressData?.forEach(p => {
-            progressMap.set(p.flashcard_id, {
-              flashcard_id: p.flashcard_id,
-              ease_factor: p.ease_factor || 2.5,
-              interval_days: p.interval_days || 1,
-              repetitions: p.repetitions || 0,
-              due_date: p.due_date || new Date().toISOString(),
-            });
-            reviewedIds.add(p.flashcard_id);
-          });
-
-          // 2. Identify due card IDs
-          const now = new Date();
-          const dueIds = progressData
-            ?.filter(p => new Date(p.due_date) <= now)
-            .map(p => p.flashcard_id) || [];
-
-          // 3. If there are due cards, fetch them
-          if (dueIds.length > 0) {
-            const { data: dueCards } = await supabase
-              .from('flashcards')
-              .select('*, domains(name)')
-              .in('id', dueIds.slice(0, 20))
-              .eq('is_active', true);
-
-            if (dueCards) finalCards = [...dueCards];
-          }
-
-          // 4. If we have fewer than 20 cards, fetch some new ones
-          if (finalCards.length < 20) {
-            const limit = 20 - finalCards.length;
-            const { data: potentialNewCards } = await supabase
-              .from('flashcards')
-              .select('*, domains(name)')
-              .eq('is_active', true)
-              .limit(50);
-
-            if (potentialNewCards) {
-              const reallyNewCards = potentialNewCards
-                .filter(c => !reviewedIds.has(c.id))
-                .slice(0, limit);
-              finalCards = [...finalCards, ...reallyNewCards];
-            }
-          }
-        }
-
-        // --- FALLBACK LOGIC ---
-        // If DB returned nothing (or we aren't logged in), use the local fallback data
-        if (finalCards.length === 0) {
-          console.log('Using fallback flashcards');
-          // Shuffle and pick 20
-          const shuffled = [...FALLBACK_FLASHCARDS].sort(() => 0.5 - Math.random());
-          finalCards = shuffled.slice(0, 20) as unknown as Flashcard[];
-        }
-
-        // Sort: Due date first, then new
-        finalCards.sort((a, b) => {
-          const progA = progressMap.get(a.id);
-          const progB = progressMap.get(b.id);
-          if (progA && progB) {
-            return new Date(progA.due_date).getTime() - new Date(progB.due_date).getTime();
-          }
-          if (progA) return -1;
-          if (progB) return 1;
-          return 0;
-        });
-
-        setFlashcards(finalCards);
-        setProgress(progressMap);
-      } catch (error) {
-        console.error('Error fetching flashcards:', error);
-        // Ensure we still show something on error
-        const shuffled = [...FALLBACK_FLASHCARDS].sort(() => 0.5 - Math.random());
-        setFlashcards(shuffled.slice(0, 20) as unknown as Flashcard[]);
-      } finally {
-        setLoading(false);
-      }
+      await fetchFlashcards();
     }
-
-    fetchFlashcards();
+    fetchData();
   }, [user]);
 
-  const currentCard = flashcards[currentIndex];
-  const currentProgress = currentCard ? progress.get(currentCard.id) : null;
+  async function fetchFlashcards() {
+    setLoading(true);
+    try {
+      let finalCards: Flashcard[] = [];
+      let progressMap = new Map<string, FlashcardProgress>();
+      const reviewedIds = new Set<string>();
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
+      if (user) {
+        const { data: progressData } = await supabase.from('flashcard_progress').select('*').eq('user_id', user.id);
+        progressData?.forEach(p => {
+          progressMap.set(p.flashcard_id, { ...p, due_date: p.due_date || new Date().toISOString() });
+        });
+
+        const now = new Date();
+        const dueIds = progressData?.filter(p => new Date(p.due_date) <= now).map(p => p.flashcard_id) || [];
+
+        if (dueIds.length > 0) {
+          const { data: dueCards } = await supabase.from('flashcards').select('*, domains(name)').in('id', dueIds.slice(0, 20)).eq('is_active', true);
+          if (dueCards) finalCards = [...dueCards];
+        }
+
+        if (finalCards.length < 20) {
+          const limit = 20 - finalCards.length;
+          const { data: newCards } = await supabase.from('flashcards').select('*, domains(name)').eq('is_active', true).limit(50);
+          if (newCards) {
+            const novel = newCards.filter(c => !progressMap.has(c.id)).slice(0, limit);
+            finalCards = [...finalCards, ...novel];
+          }
+        }
+      }
+
+      if (finalCards.length === 0) {
+        const shuffled = [...FALLBACK_FLASHCARDS].sort(() => 0.5 - Math.random());
+        finalCards = shuffled.slice(0, 20) as unknown as Flashcard[];
+      }
+
+      setFlashcards(finalCards);
+      setProgress(progressMap);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleCreate = async () => {
+    if (!newFront || !newBack || !user) {
+      toast({ title: "Incomplete Data", description: "Front and Back are required.", variant: "destructive" });
+      return;
+    }
+    setIsCreating(true);
+    try {
+      const { error } = await supabase.from('flashcards').insert({
+        front: newFront,
+        back: newBack,
+        reference_cue: newReference || null,
+        domain_id: newDomain || null,
+        created_by: user.id,
+        is_active: true
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Card Forged", description: "New concept added to your deck." });
+      setNewFront(''); setNewBack(''); setNewReference(''); setNewDomain('');
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to create card.", variant: "destructive" });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleRating = async (rating: Rating) => {
-    // Basic guard
-    if (!currentCard) return;
+    if (!flashcards[currentIndex]) return;
+    const card = flashcards[currentIndex];
 
-    // Fallback: If no user or mock card, just basic local navigation
-    if (!user || currentCard.id.startsWith('mock-')) {
-      // Simulate spaced repetition locally if we wanted, but for now just move on
+    // Simulate navigation for fallback/mock
+    if (!user || card.id.startsWith('mock-')) {
       if (rating === 'again') {
-        // Same re-queue logic
         setFlashcards(prev => {
           const updated = [...prev];
-          const [card] = updated.splice(currentIndex, 1);
-          updated.push(card);
+          const [moved] = updated.splice(currentIndex, 1);
+          updated.push(moved);
           return updated;
         });
-        setIsFlipped(false);
       } else {
-        if (currentIndex < flashcards.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-          setIsFlipped(false);
-        } else {
-          setSessionComplete(true);
-        }
+        if (currentIndex < flashcards.length - 1) setCurrentIndex(prev => prev + 1);
+        else setSessionComplete(true);
       }
+      setIsFlipped(false);
       return;
     }
 
+    const currentP = progress.get(card.id) || { ease_factor: 2.5, interval_days: 0, repetitions: 0, flashcard_id: card.id, due_date: '' };
     const quality = ratingToQuality(rating);
-    const currentEF = currentProgress?.ease_factor || 2.5;
-    const currentInterval = currentProgress?.interval_days || 1;
-    const currentReps = currentProgress?.repetitions || 0;
-
-    const sm2Result = calculateSM2({
+    const sm2 = calculateSM2({
       quality,
-      previousEaseFactor: currentEF,
-      previousInterval: currentInterval,
-      previousRepetitions: currentReps,
+      previousEaseFactor: currentP.ease_factor,
+      previousInterval: currentP.interval_days,
+      previousRepetitions: currentP.repetitions
     });
 
     try {
-      // Upsert progress
-      await supabase
-        .from('flashcard_progress')
-        .upsert({
-          user_id: user.id,
-          flashcard_id: currentCard.id,
-          ease_factor: sm2Result.easeFactor,
-          interval_days: sm2Result.interval,
-          repetitions: sm2Result.repetitions,
-          due_date: sm2Result.dueDate.toISOString(),
-          last_reviewed: new Date().toISOString(),
-          lapses: quality < 3 ? (currentProgress?.repetitions || 0) > 0 ? 1 : 0 : 0,
-        }, { onConflict: 'user_id,flashcard_id' });
+      await supabase.from('flashcard_progress').upsert({
+        user_id: user.id,
+        flashcard_id: card.id,
+        ease_factor: sm2.easeFactor,
+        interval_days: sm2.interval,
+        repetitions: sm2.repetitions,
+        due_date: sm2.dueDate.toISOString(),
+        last_reviewed: new Date().toISOString()
+      }, { onConflict: 'user_id,flashcard_id' });
 
-      // Update local progress
-      setProgress(prev => {
-        const updated = new Map(prev);
-        updated.set(currentCard.id, {
-          flashcard_id: currentCard.id,
-          ease_factor: sm2Result.easeFactor,
-          interval_days: sm2Result.interval,
-          repetitions: sm2Result.repetitions,
-          due_date: sm2Result.dueDate.toISOString(),
-        });
-        return updated;
-      });
+      setReviewed(prev => new Set(prev).add(card.id));
 
-      // Mark as reviewed
-      if (rating !== 'again') {
-        setReviewed(prev => new Set(prev).add(currentCard.id));
-      }
-
-      // Move to next card or re-queue
       if (rating === 'again') {
         setFlashcards(prev => {
           const updated = [...prev];
-          const [card] = updated.splice(currentIndex, 1);
-          updated.push(card);
+          const [moved] = updated.splice(currentIndex, 1);
+          updated.push(moved);
           return updated;
         });
-        setIsFlipped(false);
-        // currentIndex stays the same because the card moved to end and next card is now at currentIndex
+        // index stays same
       } else {
-        if (currentIndex < flashcards.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-          setIsFlipped(false);
-        } else {
-          setSessionComplete(true);
-        }
+        if (currentIndex < flashcards.length - 1) setCurrentIndex(prev => prev + 1);
+        else setSessionComplete(true);
       }
-    } catch (error) {
-      console.error('Error saving progress:', error);
+      setIsFlipped(false);
+
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-      setIsFlipped(false);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setIsFlipped(false);
-    }
-  };
+  const currentDomainName = (flashcards[currentIndex] as any)?.domains?.name ||
+    (domains.find(d => d.id === flashcards[currentIndex]?.domain_id)?.name) ||
+    'General Concept';
 
   if (authLoading || loading) {
     return (
@@ -293,249 +249,214 @@ export default function Flashcards() {
 
   if (!user) return null;
 
-  if (flashcards.length === 0) {
-    return (
-      <Layout showFooter={false}>
-        <div className="container py-12 text-center">
-          <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h2 className="mt-4 text-xl font-semibold">No Flashcards Available</h2>
-          <p className="mt-2 text-muted-foreground">
-            Flashcards are being prepared. Check back soon!
-          </p>
-          <Button asChild className="mt-6">
-            <a href="/dashboard">Return to Dashboard</a>
-          </Button>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (sessionComplete) {
-    return (
-      <Layout showFooter={false}>
-        <div className="min-h-[calc(100vh-4rem)] bg-muted/30 dark:bg-background flex items-center justify-center p-4">
-          <Card className="max-w-xl w-full text-center card-premium overflow-visible p-1">
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full gradient-primary flex items-center justify-center shadow-xl border-4 border-background animate-fade-in-up">
-              <Sparkles className="h-12 w-12 text-primary-foreground" />
-            </div>
-
-            <CardContent className="pt-16 pb-12 px-8">
-              <h2 className="font-display text-4xl font-bold tracking-tight mb-2">Session Mastered!</h2>
-              <p className="text-muted-foreground text-lg mb-10">
-                You've strengthened your recall on {reviewed.size} key concepts.
-              </p>
-
-              <div className="grid grid-cols-2 gap-6 mb-10">
-                <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 shadow-sm transition-all hover:shadow-md">
-                  <p className="text-4xl font-black text-primary mb-1">{reviewed.size}</p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-primary/70">Reviewed</p>
-                </div>
-                <div className="p-6 rounded-3xl bg-success/5 border border-success/10 shadow-sm transition-all hover:shadow-md">
-                  <p className="text-4xl font-black text-success mb-1">100%</p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-success/70">Retention</p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button variant="outline" size="lg" asChild className="rounded-2xl border-2 px-8 h-14 font-bold text-base">
-                  <a href="/dashboard" className="gap-2">
-                    <Home className="h-5 w-5" />
-                    Dashboard
-                  </a>
-                </Button>
-                <Button
-                  size="lg"
-                  className="gradient-primary shadow-glow rounded-2xl px-8 h-14 font-bold text-base"
-                  onClick={() => window.location.reload()}
-                >
-                  <RotateCcw className="h-5 w-5 mr-1" />
-                  Continue Session
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout showFooter={false}>
-      <div className="min-h-[calc(100vh-4rem)] bg-muted/30 dark:bg-background flex flex-col items-center py-6 sm:py-12 px-4">
-        <div className="w-full max-w-2xl">
-          {/* Progress Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between text-sm font-medium text-muted-foreground mb-3">
-              <span className="bg-background px-3 py-1 rounded-full border shadow-sm">
-                Card <span className="text-primary font-bold">{currentIndex + 1}</span> of {flashcards.length}
-              </span>
-              <span className="flex items-center gap-2 bg-background px-3 py-1 rounded-full border shadow-sm">
-                <Zap className="h-4 w-4 text-primary" />
-                {reviewed.size} reviewed
-              </span>
+      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-background via-background to-primary/5 py-8 px-4">
+        <div className="container max-w-4xl mx-auto space-y-8">
+
+          {/* Mode Toggle Header */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="flex items-center gap-2 p-1 bg-muted/50 rounded-2xl border border-border/50">
+              <button
+                onClick={() => setMode('review')}
+                className={`px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${mode === 'review' ? 'bg-primary text-white shadow-glow-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Review Deck
+              </button>
+              <button
+                onClick={() => setMode('create')}
+                className={`px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${mode === 'create' ? 'bg-primary text-white shadow-glow-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Forge Card
+              </button>
             </div>
-            <Progress value={((currentIndex + 1) / flashcards.length) * 100} className="h-2.5 shadow-inner" />
+            {mode === 'review' && (
+              <Badge variant="outline" className="px-4 py-1.5 bg-background/50 backdrop-blur-md border-primary/20 text-primary text-[10px] uppercase font-black tracking-widest">
+                <Zap className="h-3 w-3 mr-2 fill-primary" />
+                {reviewed.size} Concepts Mastered
+              </Badge>
+            )}
           </div>
 
-          {/* Flashcard Container */}
-          <div
-            className="perspective-1000 cursor-pointer group mb-10"
-            onClick={handleFlip}
-          >
-            <div
-              className={`relative transition-all duration-700 ease-in-out transform-style-3d min-h-[400px] sm:min-h-[450px] ${isFlipped ? 'rotate-y-180' : ''
-                }`}
-              style={{
-                transformStyle: 'preserve-3d',
-                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-              }}
-            >
-              {/* Front Side */}
-              <Card
-                className={`absolute inset-0 shadow-2xl border-2 border-primary/10 bg-card flex items-center justify-center backface-hidden transition-all group-hover:border-primary/30 ${isFlipped ? 'pointer-events-none' : ''}`}
-                style={{ backfaceVisibility: 'hidden' }}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full w-full">
-                  <div className="absolute top-6 left-6 flex items-center gap-2">
-                    <Badge variant="outline" className="px-3 py-1 bg-primary/5 text-primary border-primary/20 text-[10px] uppercase font-black tracking-[0.2em]">
-                      QUESTION
-                    </Badge>
+          {/* CREATOR MODE */}
+          {mode === 'create' && (
+            <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-300">
+              <CardHeader className="p-8 border-b border-border/10 bg-primary/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                    <Pencil className="h-5 w-5 text-white" />
                   </div>
-
-                  <div className="mb-8 p-3 rounded-2xl bg-primary/5 text-primary">
-                    <BookOpen className="h-8 w-8" />
+                  <div>
+                    <CardTitle className="text-xl font-black tracking-tight">Knowledge Forge</CardTitle>
+                    <CardDescription>Create custom distillation cards for your personal deck.</CardDescription>
                   </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">The Question (Front)</Label>
+                  <Textarea
+                    placeholder="e.g., What are the General Rules of Interpretation (GRIs) used for?"
+                    className="min-h-[100px] rounded-2xl bg-background/50 border-border/50 resize-none font-medium text-lg p-4 focus:ring-primary"
+                    value={newFront}
+                    onChange={e => setNewFront(e.target.value)}
+                  />
+                </div>
 
-                  <h3 className="text-2xl sm:text-4xl font-display font-bold leading-tight tracking-tight text-foreground">
-                    {currentCard?.front}
-                  </h3>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">The Answer (Back)</Label>
+                  <Textarea
+                    placeholder="e.g., To classify goods in the HTSUS when the heading text alone isn't sufficient..."
+                    className="min-h-[140px] rounded-2xl bg-background/50 border-border/50 resize-none font-medium text-lg p-4 focus:ring-primary"
+                    value={newBack}
+                    onChange={e => setNewBack(e.target.value)}
+                  />
+                </div>
 
-                  <div className="mt-6">
-                    <Badge variant="secondary" className="px-3 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                      {(currentCard as any)?.domains?.name || 'General Knowledge'}
-                    </Badge>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">CBLE Domain</Label>
+                    <Select value={newDomain} onValueChange={setNewDomain}>
+                      <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 font-bold">
+                        <SelectValue placeholder="Select Topic..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {domains.map(d => (
+                          <SelectItem key={d.id} value={d.id} className="font-medium">{d.name}</SelectItem>
+                        ))}
+                        <SelectItem value="general" className="font-medium">General Knowledge</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-
-                  <div className="absolute bottom-10 flex flex-col items-center gap-3 animate-bounce opacity-30">
-                    <RotateCcw className="h-5 w-5" />
-                    <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Tap to flip</span>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Legal Reference</Label>
+                    <Input
+                      placeholder="e.g., 19 CFR 152.103"
+                      className="h-12 rounded-xl bg-background/50 border-border/50 font-bold"
+                      value={newReference}
+                      onChange={e => setNewReference(e.target.value)}
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Back Side */}
-              <Card
-                className={`absolute inset-0 shadow-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card flex items-center justify-center backface-hidden ${!isFlipped ? 'pointer-events-none' : ''}`}
-                style={{
-                  backfaceVisibility: 'hidden',
-                  transform: 'rotateY(180deg)'
-                }}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full w-full">
-                  <div className="absolute top-6 right-6">
-                    <Badge className="gradient-primary border-none px-4 py-1.5 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg">
-                      THE ANSWER
-                    </Badge>
-                  </div>
-
-                  <div className="mb-8 p-3 rounded-2xl bg-success/10 text-success">
-                    <CheckCircle2 className="h-8 w-8" />
-                  </div>
-
-                  <p className="text-xl sm:text-3xl font-medium leading-relaxed text-foreground/90 max-w-[90%] font-display">
-                    {currentCard?.back}
-                  </p>
-
-                  {currentCard?.reference_cue && (
-                    <div className="mt-10 flex items-center gap-3 px-5 py-3 rounded-xl bg-muted/80 backdrop-blur-sm border-2 border-dashed font-mono text-xs text-muted-foreground uppercase tracking-wider">
-                      <span className="bg-primary/20 text-primary px-2 py-0.5 rounded font-bold text-[10px]">REF</span>
-                      {currentCard.reference_cue}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Rating Buttons (shown when flipped) */}
-          {isFlipped && (
-            <div className="grid grid-cols-4 gap-2 mb-6">
-              <Button
-                variant="outline"
-                className="flex-col h-auto py-3 border-destructive/50 hover:bg-destructive/10"
-                onClick={() => handleRating('again')}
-              >
-                <ThumbsDown className="h-5 w-5 mb-1 text-destructive" />
-                <span className="text-xs">Again</span>
-                <span className="text-[10px] text-muted-foreground">&lt;1 min</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-col h-auto py-3 border-warning/50 hover:bg-warning/10"
-                onClick={() => handleRating('hard')}
-              >
-                <Minus className="h-5 w-5 mb-1 text-warning" />
-                <span className="text-xs">Hard</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {currentProgress ? Math.max(1, Math.round(currentProgress.interval_days * 0.8)) : 1}d
-                </span>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-col h-auto py-3 border-success/50 hover:bg-success/10"
-                onClick={() => handleRating('good')}
-              >
-                <ThumbsUp className="h-5 w-5 mb-1 text-success" />
-                <span className="text-xs">Good</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {currentProgress ? currentProgress.interval_days : 1}d
-                </span>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-col h-auto py-3 border-primary/50 hover:bg-primary/10"
-                onClick={() => handleRating('easy')}
-              >
-                <Zap className="h-5 w-5 mb-1 text-primary" />
-                <span className="text-xs">Easy</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {currentProgress ? Math.round(currentProgress.interval_days * 1.3) : 4}d
-                </span>
-              </Button>
-            </div>
+                <div className="pt-4 flex justify-end">
+                  <Button
+                    size="lg"
+                    onClick={handleCreate}
+                    disabled={isCreating}
+                    className="h-14 px-8 rounded-2xl gradient-primary shadow-glow-primary font-black uppercase tracking-widest text-xs gap-2 transition-all active:scale-95"
+                  >
+                    {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Save to Deck
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-              className="gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
+          {/* REVIEW MODE */}
+          {mode === 'review' && (
+            <div className="relative">
+              {sessionComplete ? (
+                <Card className="max-w-xl mx-auto border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden animate-in zoom-in duration-500 text-center">
+                  <CardContent className="py-20 px-8">
+                    <div className="mx-auto h-24 w-24 rounded-full gradient-primary flex items-center justify-center shadow-lg mb-8">
+                      <CheckCircle2 className="h-12 w-12 text-white" />
+                    </div>
+                    <h2 className="font-display text-3xl font-black tracking-tight mb-4">Focus Cycle Complete</h2>
+                    <p className="text-muted-foreground text-lg mb-8">You've successfully reinforced {reviewed.size} neural pathways.</p>
+                    <Button size="lg" onClick={() => window.location.reload()} className="h-14 px-10 rounded-2xl gradient-primary font-black uppercase tracking-widest shadow-glow">
+                      <RotateCcw className="h-4 w-4 mr-2" /> Start New Cycle
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  {flashcards.length > 0 ? (
+                    <div className="perspective-1000 group">
+                      {/* Progress HUD */}
+                      <div className="absolute -top-12 left-0 right-0 flex justify-center pb-8 z-10">
+                        <div className="bg-card/80 backdrop-blur-md px-6 py-2 rounded-full border border-border/50 shadow-sm flex items-center gap-4">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Card {currentIndex + 1} / {flashcards.length}</span>
+                          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-primary transition-all duration-500" style={{ width: `${((currentIndex + 1) / flashcards.length) * 100}%` }} />
+                          </div>
+                        </div>
+                      </div>
 
-            <Button
-              variant="outline"
-              onClick={handleFlip}
-              className="gap-2"
-            >
-              {isFlipped ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {isFlipped ? 'Hide' : 'Show'} Answer
-            </Button>
+                      <div
+                        className={`relative transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform-style-3d min-h-[500px] cursor-pointer`}
+                        style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                        onClick={() => setIsFlipped(!isFlipped)}
+                      >
+                        {/* FRONT */}
+                        <div
+                          className={`absolute inset-0 backface-hidden rounded-[2.5rem] bg-card border-2 border-border/50 shadow-2xl p-10 flex flex-col items-center justify-center text-center group-hover:border-primary/20 transition-colors ${isFlipped ? 'pointer-events-none' : ''}`}
+                          style={{ backfaceVisibility: 'hidden' }}
+                        >
+                          <div className="absolute top-8 left-8">
+                            <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 tracking-[0.2em] font-black text-[10px]">
+                              {currentDomainName}
+                            </Badge>
+                          </div>
+                          <Brain className="h-16 w-16 text-primary mb-8 opacity-20" />
+                          <h3 className="text-2xl md:text-4xl font-display font-medium leading-tight">{flashcards[currentIndex].front}</h3>
+                          <div className="absolute bottom-8 flex flex-col items-center animate-pulse opacity-50">
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">Tap to Reveal</span>
+                          </div>
+                        </div>
 
-            <Button
-              variant="outline"
-              onClick={handleNext}
-              disabled={currentIndex === flashcards.length - 1}
-              className="gap-2"
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+                        {/* BACK */}
+                        <div
+                          className="absolute inset-0 backface-hidden rounded-[2.5rem] bg-gradient-to-br from-card to-primary/5 border-2 border-primary/20 shadow-glow-primary p-10 flex flex-col items-center justify-center text-center"
+                          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                        >
+                          <p className="text-xl md:text-2xl font-medium leading-relaxed">{flashcards[currentIndex].back}</p>
+                          {flashcards[currentIndex].reference_cue && (
+                            <div className="mt-8 px-4 py-2 rounded-xl bg-background/50 border border-border/50 font-mono text-xs text-muted-foreground font-bold">
+                              REF: {flashcards[currentIndex].reference_cue}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CONTROLS */}
+                      <div className={`mt-8 grid grid-cols-4 gap-4 transition-all duration-500 transform ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                        {[
+                          { id: 'again', label: 'Again', color: 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20', icon: RotateCcw, sub: '< 1m' },
+                          { id: 'hard', label: 'Hard', color: 'bg-warning/10 text-warning border-warning/20 hover:bg-warning/20', icon: Minus, sub: '2d' },
+                          { id: 'good', label: 'Good', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20', icon: ThumbsUp, sub: '4d' },
+                          { id: 'easy', label: 'Easy', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20', icon: Zap, sub: '7d' }
+                        ].map((btn) => (
+                          <button
+                            key={btn.id}
+                            onClick={(e) => { e.stopPropagation(); handleRating(btn.id as Rating); }}
+                            className={`group relative flex flex-col items-center justify-center p-4 rounded-3xl border ${btn.color} transition-all active:scale-95 shadow-lg backdrop-blur-sm`}
+                          >
+                            <btn.icon className="h-6 w-6 mb-2" />
+                            <span className="text-xs font-black uppercase tracking-wider">{btn.label}</span>
+                            <span className="text-[10px] opacity-70 mt-1 font-bold">{btn.sub}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-24 animate-in fade-in zoom-in">
+                      <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Layers className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-xl font-bold">Deck Empty</h3>
+                      <p className="text-muted-foreground max-w-sm mx-auto mt-2 mb-8">No cards are currently active for review.</p>
+                      <Button onClick={() => setMode('create')} variant="outline" className="rounded-xl border-dashed h-12 px-8">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Forge First Card
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Layout>

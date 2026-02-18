@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Trophy, Medal, Crown, Flame, Target, Star } from 'lucide-react';
+import { Loader2, Trophy, Medal, Crown, Flame, Target, Star, ChevronRight } from 'lucide-react';
 
 interface LeaderboardEntry {
     user_id: string;
@@ -17,8 +20,12 @@ interface LeaderboardEntry {
 }
 
 export default function Leaderboard() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const currentUserEntry = entries.find(e => e.user_id === user?.id);
 
     useEffect(() => {
         async function fetchLeaderboard() {
@@ -60,7 +67,7 @@ export default function Leaderboard() {
 
                     return {
                         user_id: p.id,
-                        display_name: p.display_name || 'Anonymous Broker',
+                        display_name: p.display_name || 'Candidate Broker',
                         avatar_url: p.avatar_url,
                         total_points: totalPoints,
                         current_streak: streak,
@@ -86,129 +93,190 @@ export default function Leaderboard() {
     }, []);
 
     return (
-        <Layout>
-            <div className="container py-12 max-w-4xl animate-fade-in">
-                <div className="text-center mb-12">
-                    <Badge variant="outline" className="mb-4 px-4 py-1.5 bg-primary/5 text-primary border-primary/20 text-xs font-bold uppercase tracking-widest">
-                        The Elite Circle
-                    </Badge>
-                    <h1 className="font-display text-5xl font-bold tracking-tight mb-4">
-                        CBLE <span className="text-gradient-primary">Top Performers</span>
-                    </h1>
-                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Compete with the most dedicated customs broker candidates. Points are awarded for accuracy,
-                        domain mastery, and study consistency.
-                    </p>
-                </div>
-
-                {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <Layout showFooter={false}>
+            <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 py-12 px-4 relative pb-32">
+                <div className="container max-w-5xl mx-auto">
+                    {/* Header Section */}
+                    <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
+                        <Badge
+                            variant="outline"
+                            className="mb-4 px-6 py-2 bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-sm"
+                        >
+                            The Global Exchange
+                        </Badge>
+                        <h1 className="font-display text-5xl md:text-6xl font-black tracking-tighter mb-6">
+                            Elite <span className="text-primary italic">Circle</span>
+                        </h1>
+                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+                            The definitive hierarchy of CBLE candidates. Points are calculated based on session consistency, domain mastery, and accuracy.
+                        </p>
                     </div>
-                ) : (
-                    <div className="space-y-4">
-                        {/* Top 3 Podium */}
-                        <div className="grid gap-6 md:grid-cols-3 mb-12">
-                            {[1, 0, 2].map((idx) => {
-                                const entry = entries[idx];
-                                if (!entry) return null;
-                                const isWinner = entry.rank === 1;
 
-                                return (
-                                    <Card
-                                        key={entry.user_id}
-                                        className={`relative overflow-hidden border-none shadow-xl transition-all hover:scale-105 ${isWinner ? 'bg-gradient-to-br from-primary/20 via-primary/5 to-transparent ring-2 ring-primary order-1 md:order-2 md:translate-y-[-20px]' :
-                                            entry.rank === 2 ? 'order-2 md:order-1' : 'order-3'
-                                            }`}
-                                    >
-                                        <CardContent className="pt-10 text-center">
-                                            <div className="relative mx-auto mb-4 w-24 h-24">
-                                                <Avatar className="w-24 h-24 border-4 border-card shadow-lg">
-                                                    <AvatarImage src={entry.avatar_url || ''} />
-                                                    <AvatarFallback className="text-2xl font-bold bg-muted">
-                                                        {entry.display_name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div className="absolute -bottom-2 -right-2 h-10 w-10 flex items-center justify-center rounded-full bg-card shadow-md">
-                                                    {entry.rank === 1 ? <Crown className="h-6 w-6 text-yellow-500 fill-yellow-500" /> :
-                                                        entry.rank === 2 ? <Medal className="h-6 w-6 text-slate-400 fill-slate-400" /> :
-                                                            <Medal className="h-6 w-6 text-amber-700 fill-amber-700" />}
-                                                </div>
-                                            </div>
-                                            <h3 className="font-bold text-xl mb-1">{entry.display_name}</h3>
-                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Rank #{entry.rank}</p>
-
-                                            <div className="flex items-center justify-center gap-4 py-3 rounded-xl bg-card/50 border">
-                                                <div className="text-center">
-                                                    <p className="text-sm font-black text-primary">{entry.total_points}</p>
-                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Points</p>
-                                                </div>
-                                                <div className="h-8 w-px bg-border" />
-                                                <div className="text-center">
-                                                    <p className="text-sm font-black text-accent flex items-center justify-center">
-                                                        {entry.current_streak} <Flame className="h-3 w-3 ml-0.5 fill-accent" />
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Streak</p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-24 gap-4">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary opacity-50" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Synchronizing rankings...</p>
                         </div>
+                    ) : (
+                        <div className="space-y-12">
+                            {/* Podium Section */}
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-4 lg:gap-8 mb-20 animate-in fade-in zoom-in duration-1000">
+                                {[1, 0, 2].map((idx) => {
+                                    const entry = entries[idx];
+                                    if (!entry) return null;
+                                    const isGold = entry.rank === 1;
+                                    const isSilver = entry.rank === 2;
 
-                        {/* List for the rest */}
-                        <Card className="border-none shadow-2xl overflow-hidden">
-                            <CardHeader className="bg-muted/30 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg">Top Candidates</CardTitle>
-                                    <Trophy className="h-5 w-5 text-primary opacity-50" />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="divide-y">
-                                    {entries.slice(3).map((entry) => (
-                                        <div key={entry.user_id} className="flex items-center justify-between p-4 hover:bg-muted/20 transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <span className="w-6 text-center font-bold text-muted-foreground">#{entry.rank}</span>
-                                                <Avatar className="h-10 w-10 border shadow-sm">
-                                                    <AvatarImage src={entry.avatar_url || ''} />
-                                                    <AvatarFallback>{entry.display_name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-bold text-sm">{entry.display_name}</p>
-                                                    <div className="flex items-center gap-3 mt-0.5">
-                                                        <span className="flex items-center text-[10px] font-bold text-accent">
-                                                            <Flame className="h-3 w-3 mr-0.5" /> {entry.current_streak} DAY STREAK
-                                                        </span>
+                                    return (
+                                        <div
+                                            key={entry.user_id}
+                                            className={`relative w-full max-w-[300px] ${isGold ? 'order-1 md:order-2 md:scale-110 z-10' :
+                                                isSilver ? 'order-2 md:order-1' : 'order-3'
+                                                }`}
+                                        >
+                                            <Card className={`border-none shadow-2xl overflow-hidden rounded-[2.5rem] transition-all duration-500 hover:translate-y--2 ${isGold ? 'bg-gradient-to-b from-primary/30 via-card to-card ring-2 ring-primary/50' :
+                                                'bg-card/60 backdrop-blur-md'
+                                                }`}>
+                                                <CardContent className="pt-12 pb-8 text-center">
+                                                    <div className="relative mx-auto mb-6">
+                                                        <div className={`absolute inset-0 rounded-full blur-2xl animate-pulse ${isGold ? 'bg-primary/40' :
+                                                            isSilver ? 'bg-slate-400/20' : 'bg-amber-700/20'
+                                                            }`} />
+                                                        <Avatar className="w-24 h-24 mx-auto border-4 border-background shadow-2xl relative">
+                                                            <AvatarImage src={entry.avatar_url || ''} />
+                                                            <AvatarFallback className="text-2xl font-black bg-muted">
+                                                                {entry.display_name.charAt(0)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="absolute -bottom-2 -right-2 h-10 w-10 flex items-center justify-center rounded-2xl bg-card shadow-xl border border-border">
+                                                            {isGold ? <Crown className="h-6 w-6 text-yellow-500 fill-yellow-500 animate-bounce" /> :
+                                                                isSilver ? <Medal className="h-6 w-6 text-slate-400 fill-slate-400" /> :
+                                                                    <Medal className="h-6 w-6 text-amber-700 fill-amber-700" />}
+                                                        </div>
+                                                    </div>
+
+                                                    <h3 className="font-display font-black text-xl mb-1 tracking-tight">{entry.display_name}</h3>
+                                                    <div className="flex items-center justify-center gap-2 mb-6">
+                                                        <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isGold ? 'bg-primary text-white shadow-glow-primary' : 'bg-muted text-muted-foreground'
+                                                            }`}>
+                                                            {isGold ? 'Broker Supreme' : `Elite Rank #${entry.rank}`}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-px bg-border/50 rounded-2xl overflow-hidden border border-border/50">
+                                                        <div className="bg-card p-4">
+                                                            <p className="text-xl font-black text-primary leading-none mb-1">{entry.total_points.toLocaleString()}</p>
+                                                            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Credits</p>
+                                                        </div>
+                                                        <div className="bg-card p-4">
+                                                            <p className="text-xl font-black text-accent leading-none mb-1 flex items-center justify-center">
+                                                                {entry.current_streak} <Flame className="h-4 w-4 ml-1 text-accent fill-accent" />
+                                                            </p>
+                                                            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Streak</p>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Ranking Table Section */}
+                            <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+                                <Card className="border-none shadow-3xl bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+                                    <CardHeader className="p-8 border-b border-border/10 flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle className="text-lg font-black uppercase tracking-widest">Global Top 100</CardTitle>
+                                            <CardDescription className="text-xs">Live tracking of candidate performance</CardDescription>
+                                        </div>
+                                        <Trophy className="h-8 w-8 text-primary opacity-20" />
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="divide-y divide-border/10">
+                                            {entries.slice(3).map((entry, i) => (
+                                                <div
+                                                    key={entry.user_id}
+                                                    className={`flex items-center justify-between p-6 transition-all hover:bg-primary/[0.02] group ${entry.user_id === user?.id ? 'bg-primary/[0.03]' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="w-8 text-center text-sm font-black text-muted-foreground/30 group-hover:text-primary transition-colors">
+                                                            {entry.rank.toString().padStart(2, '0')}
+                                                        </div>
+                                                        <div className="relative">
+                                                            <Avatar className="h-12 w-12 border-2 border-background shadow-md group-hover:scale-105 transition-transform">
+                                                                <AvatarImage src={entry.avatar_url || ''} />
+                                                                <AvatarFallback className="font-bold">{entry.display_name.charAt(0)}</AvatarFallback>
+                                                            </Avatar>
+                                                            {entry.current_streak >= 7 && (
+                                                                <div className="absolute -top-1 -right-1 h-5 w-5 bg-accent rounded-full border-2 border-background flex items-center justify-center">
+                                                                    <Flame className="h-3 w-3 text-white fill-white" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-sm tracking-tight flex items-center gap-2">
+                                                                {entry.display_name}
+                                                                {entry.user_id === user?.id && (
+                                                                    <Badge className="bg-primary/10 text-primary border-none text-[8px] font-black uppercase h-5">YOU</Badge>
+                                                                )}
+                                                            </p>
+                                                            <div className="flex items-center gap-3 mt-1">
+                                                                <span className="flex items-center text-[9px] font-black text-accent uppercase tracking-widest bg-accent/5 px-2 py-0.5 rounded-full">
+                                                                    {entry.current_streak} Day Streak
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right flex items-center gap-8">
+                                                        <div className="hidden sm:block">
+                                                            <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest mb-1">Efficiency</p>
+                                                            <div className="h-1.5 w-20 bg-muted rounded-full overflow-hidden">
+                                                                <div className="h-full bg-primary/40" style={{ width: `${Math.min(100, (entry.total_points / (entries[0]?.total_points || 1)) * 100)}%` }} />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-display font-black text-lg text-primary leading-none">{entry.total_points.toLocaleString()}</p>
+                                                            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Mastery Pts</p>
+                                                        </div>
+                                                        <ChevronRight className="h-4 w-4 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-black text-sm text-primary">{entry.total_points.toLocaleString()}</p>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">TOTAL POINTS</p>
-                                            </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                    {entries.length === 0 && (
-                                        <div className="py-20 text-center">
-                                            <p className="text-muted-foreground">No rankings available yet. Be the first!</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <div className="mt-8 rounded-2xl bg-primary/5 border border-dashed border-primary/20 p-6 flex items-center gap-6">
-                            <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center shadow-md">
-                                <Star className="h-6 w-6 text-primary" />
+                                    </CardContent>
+                                </Card>
                             </div>
-                            <div>
-                                <h4 className="font-bold">How are points calculated?</h4>
-                                <p className="text-sm text-muted-foreground">
-                                    Points = (Domain Mastery × 100) + (Correct Answers × 10) + (Current Streak × 50).
-                                    Keep your streak alive to multiply your climbing speed!
-                                </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Floating "My Rank" Overlay */}
+                {currentUserEntry && (
+                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90vw] max-w-2xl z-50 animate-in slide-in-from-bottom-12 duration-1000">
+                        <div className="bg-foreground text-background rounded-3xl p-6 shadow-2xl flex items-center justify-between border border-white/10 backdrop-blur-xl">
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center font-black text-2xl relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-primary/20 animate-pulse" />
+                                    #{currentUserEntry.rank}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black tracking-[0.2em] opacity-50 uppercase">Your Standing</p>
+                                    <h4 className="font-display font-black text-xl tracking-tight">Elite Candidate</h4>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-8">
+                                <div className="text-center">
+                                    <p className="text-2xl font-black leading-none text-primary">{currentUserEntry.total_points.toLocaleString()}</p>
+                                    <p className="text-[9px] font-black opacity-50 uppercase mt-1">Total Pts</p>
+                                </div>
+                                <Button
+                                    className="bg-white text-black hover:bg-white/90 rounded-2xl h-14 px-8 font-black uppercase tracking-widest text-xs shadow-xl"
+                                    onClick={() => navigate('/study')}
+                                >
+                                    Climb Rank
+                                </Button>
                             </div>
                         </div>
                     </div>
