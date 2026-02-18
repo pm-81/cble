@@ -59,11 +59,11 @@ export default function Leaderboard() {
                     pointsMap.set(m.user_id, current + (m.mastery_level * 100) + (m.correct_attempts * 10));
                 });
 
-                // 5. Build Entries
-                const formattedEntries: LeaderboardEntry[] = (profiles || []).map((p) => {
+                // 5. Build Final Entries (Merge Real + Mock)
+                const realEntries: LeaderboardEntry[] = (profiles || []).map((p) => {
                     const streak = streakMap.get(p.id) || 0;
                     const basePoints = pointsMap.get(p.id) || 0;
-                    const totalPoints = basePoints + (streak * 50);
+                    const totalPoints = Number(basePoints) + (Number(streak) * 50);
 
                     return {
                         user_id: p.id,
@@ -72,41 +72,36 @@ export default function Leaderboard() {
                         total_points: totalPoints,
                         current_streak: streak,
                         accuracy: 0,
-                        rank: 0, // Assigned after sort
+                        rank: 0,
                     };
                 });
 
-                // 6. Sort and Rank
-                let sortedEntries = formattedEntries
+                const mockUsers: LeaderboardEntry[] = [
+                    { user_id: 'm1', display_name: 'James Carter', avatar_url: null, total_points: 15450, current_streak: 14, accuracy: 88, rank: 0 },
+                    { user_id: 'm2', display_name: 'Sarah Jenkins', avatar_url: null, total_points: 12200, current_streak: 8, accuracy: 92, rank: 0 },
+                    { user_id: 'm3', display_name: 'Michael Ross', avatar_url: null, total_points: 9800, current_streak: 5, accuracy: 85, rank: 0 },
+                    { user_id: 'm4', display_name: 'Emma Vance', avatar_url: null, total_points: 8500, current_streak: 12, accuracy: 90, rank: 0 },
+                    { user_id: 'm5', display_name: 'David Miller', avatar_url: null, total_points: 7200, current_streak: 3, accuracy: 78, rank: 0 },
+                    { user_id: 'm6', display_name: 'Linda Zhang', avatar_url: null, total_points: 6100, current_streak: 7, accuracy: 82, rank: 0 },
+                    { user_id: 'm7', display_name: 'Robert Fox', avatar_url: null, total_points: 5400, current_streak: 2, accuracy: 75, rank: 0 },
+                    { user_id: 'm8', display_name: 'Sophia Grey', avatar_url: null, total_points: 4900, current_streak: 10, accuracy: 89, rank: 0 },
+                    { user_id: 'm9', display_name: 'Lucas Payne', avatar_url: null, total_points: 3800, current_streak: 4, accuracy: 72, rank: 0 },
+                    { user_id: 'm10', display_name: 'Aria Stark', avatar_url: null, total_points: 2500, current_streak: 6, accuracy: 80, rank: 0 },
+                ];
+
+                // Combine them
+                const allEntriesMap = new Map<string, LeaderboardEntry>();
+                // Add mocks first (they will be overwritten by real users if name/id matches, but we'll use user_id as key)
+                mockUsers.forEach(mu => allEntriesMap.set(mu.user_id, mu));
+                // Real users overwrite mock keys or add new ones
+                realEntries.forEach(re => allEntriesMap.set(re.user_id, re));
+
+                const combined = Array.from(allEntriesMap.values());
+
+                // Sort and Rank everything together
+                const sortedEntries = combined
                     .sort((a, b) => b.total_points - a.total_points)
                     .map((entry, index) => ({ ...entry, rank: index + 1 }));
-
-                // 7. Add Global Mock Users for high-impact HUD feel
-                if (sortedEntries.length < 15) {
-                    const mockUsers: LeaderboardEntry[] = [
-                        { user_id: 'm1', display_name: 'James Carter', avatar_url: null, total_points: 15450, current_streak: 14, accuracy: 88, rank: 0 },
-                        { user_id: 'm2', display_name: 'Sarah Jenkins', avatar_url: null, total_points: 12200, current_streak: 8, accuracy: 92, rank: 0 },
-                        { user_id: 'm3', display_name: 'Michael Ross', avatar_url: null, total_points: 9800, current_streak: 5, accuracy: 85, rank: 0 },
-                        { user_id: 'm4', display_name: 'Emma Vance', avatar_url: null, total_points: 8500, current_streak: 12, accuracy: 90, rank: 0 },
-                        { user_id: 'm5', display_name: 'David Miller', avatar_url: null, total_points: 7200, current_streak: 3, accuracy: 78, rank: 0 },
-                        { user_id: 'm6', display_name: 'Linda Zhang', avatar_url: null, total_points: 6100, current_streak: 7, accuracy: 82, rank: 0 },
-                        { user_id: 'm7', display_name: 'Robert Fox', avatar_url: null, total_points: 5400, current_streak: 2, accuracy: 75, rank: 0 },
-                        { user_id: 'm8', display_name: 'Sophia Grey', avatar_url: null, total_points: 4900, current_streak: 10, accuracy: 89, rank: 0 },
-                        { user_id: 'm9', display_name: 'Lucas Payne', avatar_url: null, total_points: 3800, current_streak: 4, accuracy: 72, rank: 0 },
-                        { user_id: 'm10', display_name: 'Aria Stark', avatar_url: null, total_points: 2500, current_streak: 6, accuracy: 80, rank: 0 },
-                    ];
-
-                    const combined = [...sortedEntries];
-                    mockUsers.forEach(mu => {
-                        if (!combined.find(c => c.display_name === mu.display_name)) {
-                            combined.push(mu);
-                        }
-                    });
-
-                    sortedEntries = combined
-                        .sort((a, b) => b.total_points - a.total_points)
-                        .map((entry, index) => ({ ...entry, rank: index + 1 }));
-                }
 
                 setEntries(sortedEntries);
             } catch (error) {
