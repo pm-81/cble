@@ -310,226 +310,178 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
             </Card>
           ) : (
             <>
-              {/* Primary Stats Grid */}
+              {/* Primary Dashboard Grid */}
               <div className="grid gap-6 lg:grid-cols-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-                <div className="lg:col-span-4 flex flex-col h-full">
+                {/* Left Column: Readiness Sidebar */}
+                <div className="lg:col-span-4 flex flex-col">
                   <ExamReadinessScore userId={user.id} />
                 </div>
 
-                <div className="lg:col-span-8 grid gap-4 grid-cols-2 sm:grid-cols-4">
-                  {[
-                    { label: 'Precision Rate', value: `${accuracyRate}%`, icon: Target, color: 'text-primary', bg: 'bg-primary/10', gradient: 'from-primary/20 to-primary/5' },
-                    { label: 'Attempts', value: data?.totalAttempts, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-500/5' },
-                    { label: 'Verified', value: data?.correctAttempts, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-500/10', gradient: 'from-emerald-500/20 to-emerald-500/5' },
-                    { label: 'Cognition', value: `${overconfidenceScore > 0 ? '+' : ''}${overconfidenceScore}%`, icon: AlertTriangle, color: overconfidenceScore > 10 ? 'text-orange-500' : 'text-slate-500', bg: overconfidenceScore > 10 ? 'bg-orange-500/10' : 'bg-slate-500/10', gradient: overconfidenceScore > 10 ? 'from-orange-500/20 to-orange-500/5' : 'from-slate-500/20 to-slate-500/5' },
-                  ].map((stat, i) => (
-                    <Card key={i} className={`relative overflow-hidden border-white/5 shadow-2xl bg-gradient-to-br ${stat.gradient} backdrop-blur-xl p-6 hover:translate-y--1 transition-all duration-300 group`}>
-                      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <stat.icon className="h-24 w-24 -mr-8 -mt-8 rotate-12" />
+                {/* Right Column: Metrics & Visualization */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* KPIS */}
+                  <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+                    {[
+                      { label: 'Precision Rate', value: `${accuracyRate}%`, icon: Target, color: 'text-primary', bg: 'bg-primary/10', gradient: 'from-primary/20 to-primary/5' },
+                      { label: 'Attempts', value: data?.totalAttempts, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-500/5' },
+                      { label: 'Verified', value: data?.correctAttempts, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-500/10', gradient: 'from-emerald-500/20 to-emerald-500/5' },
+                      { label: 'Cognition', value: `${overconfidenceScore > 0 ? '+' : ''}${overconfidenceScore}%`, icon: AlertTriangle, color: overconfidenceScore > 10 ? 'text-orange-500' : 'text-slate-500', bg: overconfidenceScore > 10 ? 'bg-orange-500/10' : 'bg-slate-500/10', gradient: overconfidenceScore > 10 ? 'from-orange-500/20 to-orange-500/5' : 'from-slate-500/20 to-slate-500/5' },
+                    ].map((stat, i) => (
+                      <Card key={i} className={`relative overflow-hidden border-white/5 shadow-2xl bg-gradient-to-br ${stat.gradient} backdrop-blur-xl p-6 hover:translate-y--1 transition-all duration-300 group`}>
+                        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <stat.icon className="h-24 w-24 -mr-8 -mt-8 rotate-12" />
+                        </div>
+                        <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 shadow-inner ring-1 ring-white/10`}>
+                          <stat.icon className="h-5 w-5" />
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1 z-10 relative">{stat.label}</p>
+                        <p className="text-3xl font-black tracking-tight z-10 relative">{stat.value}</p>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Domain Highlights */}
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                    <Card className="border-none shadow-xl bg-card/40 backdrop-blur-sm p-6 flex flex-row items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Elite Domain</p>
+                        <p className="text-xl font-bold truncate max-w-[180px]">{strongestDomain?.shorthand}</p>
                       </div>
-                      <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 shadow-inner ring-1 ring-white/10`}>
-                        <stat.icon className="h-5 w-5" />
+                      <div className="text-right">
+                        <p className="text-3xl font-black text-emerald-500">{strongestDomain?.accuracy}%</p>
+                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Mastery</p>
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1 z-10 relative">{stat.label}</p>
-                      <p className="text-3xl font-black tracking-tight z-10 relative">{stat.value}</p>
                     </Card>
-                  ))}
 
-                  <Card className="col-span-2 border-none shadow-xl bg-card/40 backdrop-blur-sm p-6 flex flex-row items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Elite Domain</p>
-                      <p className="text-xl font-bold truncate max-w-[180px]">{strongestDomain?.shorthand}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-3xl font-black text-emerald-500">{strongestDomain?.accuracy}%</p>
-                      <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Mastery</p>
-                    </div>
+                    <Card className="border-none shadow-xl bg-card/40 backdrop-blur-sm p-6 flex flex-row items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Friction Area</p>
+                        <p className="text-xl font-bold truncate max-w-[180px]">{weakestDomain?.shorthand}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-3xl font-black text-orange-500">{weakestDomain?.accuracy}%</p>
+                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Mastery</p>
+                      </div>
+                    </Card>
+                  </div>
+
+                  {/* Velocity Timeline */}
+                  <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden ring-1 ring-white/5 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                    <CardHeader className="p-8 border-b border-white/5 flex flex-row items-center justify-between relative z-10">
+                      <div>
+                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-primary/80">Velocity Timeline</CardTitle>
+                        <CardDescription className="font-medium">Question volume vs implementation accuracy</CardDescription>
+                      </div>
+                      <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                        <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-muted shadow-sm" /> Volume</div>
+                        <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary shadow-glow-primary" /> Accuracy</div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-8 relative z-10">
+                      <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={data?.recentTrend}>
+                            <defs>
+                              <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.1} />
+                            <XAxis
+                              dataKey="date"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))', dy: 10 }}
+                            />
+                            <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} />
+                            <YAxis yAxisId="right" orientation="right" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--primary))' }} />
+                            <Tooltip
+                              contentStyle={{ borderRadius: '1rem', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 20px 40px -10px rgb(0 0 0 / 0.3)' }}
+                              cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '5 5', strokeOpacity: 0.5 }}
+                            />
+                            <Bar
+                              yAxisId="left"
+                              dataKey="attempts"
+                              fill="hsl(var(--muted))"
+                              radius={[8, 8, 0, 0]}
+                              barSize={32}
+                              fillOpacity={0.3}
+                              name="Telemetric Volume"
+                            />
+                            <Area
+                              yAxisId="right"
+                              type="monotone"
+                              dataKey="accuracy"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth={4}
+                              fillOpacity={1}
+                              fill="url(#colorAcc)"
+                              name="Accuracy Precision"
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
                   </Card>
 
-                  <Card className="col-span-2 border-none shadow-xl bg-card/40 backdrop-blur-sm p-6 flex flex-row items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Friction Area</p>
-                      <p className="text-xl font-bold truncate max-w-[180px]">{weakestDomain?.shorthand}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-3xl font-black text-orange-500">{weakestDomain?.accuracy}%</p>
-                      <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Mastery</p>
-                    </div>
-                  </Card>
-                </div>
-              </div>
+                  {/* Cognitive Map (Radar) & Calibration */}
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+                      <CardHeader className="p-6 border-b border-border/10">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest">Cognitive Map</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="h-[200px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data?.domainStats}>
+                              <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
+                              <PolarAngleAxis dataKey="shorthand" tick={{ fontSize: 9, fontWeight: 900, fill: 'hsl(var(--muted-foreground))' }} />
+                              <Radar
+                                name="Mastery"
+                                dataKey="accuracy"
+                                stroke="hsl(var(--primary))"
+                                fill="hsl(var(--primary))"
+                                fillOpacity={0.2}
+                                strokeWidth={3}
+                              />
+                              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '1rem' }} />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              {/* Data Visualization Environment */}
-              <div className="grid gap-8 lg:grid-cols-3 animate-in fade-in duration-1000 delay-500">
-                {/* Domain Mastery Radar */}
-                <Card className="lg:col-span-1 border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                  <CardHeader className="p-8 border-b border-border/10">
-                    <CardTitle className="text-sm font-black uppercase tracking-widest">Cognitive Map</CardTitle>
-                    <CardDescription>Topic mastery distribution</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                    <div className="h-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data?.domainStats}>
-                          <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.4} />
-                          <PolarAngleAxis dataKey="shorthand" tick={{ fontSize: 9, fontWeight: 900, fill: 'hsl(var(--muted-foreground))' }} />
-                          <Radar
-                            name="Mastery"
-                            dataKey="accuracy"
-                            stroke="hsl(var(--primary))"
-                            fill="hsl(var(--primary))"
-                            fillOpacity={0.2}
-                            strokeWidth={3}
-                          />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '1rem', border: '1px solid hsl(var(--border))', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                            itemStyle={{ fontWeight: 800, color: 'hsl(var(--primary))' }}
-                          />
-                        </RadarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
+                    {/* Calibration Metric */}
+                    <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+                      <CardHeader className="p-6 border-b border-border/10">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-xs font-black uppercase tracking-widest">Calibration Metric</CardTitle>
+                          <Sparkles className="h-4 w-4 text-primary opacity-20" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="h-[200px] w-full pb-2">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data?.confidenceVsAccuracy} margin={{ bottom: 20 }}>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                              <XAxis dataKey="confidence" label={{ value: 'Confidence Index', position: 'bottom', fontSize: 10, offset: 0, fontWeight: 900 }} axisLine={false} tickLine={false} />
+                              <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                              <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '1rem', border: '1px solid hsl(var(--border))' }} />
+                              <Bar dataKey="accuracy" radius={[8, 8, 0, 0]} barSize={24}>
+                                {data?.confidenceVsAccuracy.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.accuracy > 70 ? 'hsl(var(--primary))' : 'hsl(var(--accent))'} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                {/* Progress Trend Environment */}
-                <Card className="lg:col-span-2 border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden ring-1 ring-white/5 relative">
-                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-                  <CardHeader className="p-8 border-b border-white/5 flex flex-row items-center justify-between relative z-10">
-                    <div>
-                      <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-primary/80">Velocity Timeline</CardTitle>
-                      <CardDescription className="font-medium">Question volume vs implementation accuracy</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-muted shadow-sm" /> Volume</div>
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary shadow-glow-primary" /> Accuracy</div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-8 relative z-10">
-                    <div className="h-[340px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={data?.recentTrend}>
-                          <defs>
-                            <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.1} />
-                          <XAxis
-                            dataKey="date"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))', dy: 10 }}
-                          />
-                          <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} />
-                          <YAxis yAxisId="right" orientation="right" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--primary))' }} />
-                          <Tooltip
-                            contentStyle={{ borderRadius: '1rem', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 20px 40px -10px rgb(0 0 0 / 0.3)' }}
-                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '5 5', strokeOpacity: 0.5 }}
-                          />
-                          <Bar
-                            yAxisId="left"
-                            dataKey="attempts"
-                            fill="hsl(var(--muted))"
-                            radius={[8, 8, 0, 0]}
-                            barSize={32}
-                            fillOpacity={0.3}
-                            name="Telemetric Volume"
-                          />
-                          <Area
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="accuracy"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth={4}
-                            fillOpacity={1}
-                            fill="url(#colorAcc)"
-                            name="Accuracy Precision"
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Calibration & Strategy Row */}
-              <div className="grid gap-8 lg:grid-cols-2 animate-in fade-in duration-1000 delay-700">
-                <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] p-8">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <CardTitle className="text-sm font-black uppercase tracking-widest">Calibration Metric</CardTitle>
-                      <CardDescription>Correlation of confidence to success</CardDescription>
-                    </div>
-                    <Sparkles className="h-6 w-6 text-primary opacity-20" />
-                  </div>
-                  <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={data?.confidenceVsAccuracy}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                        <XAxis dataKey="confidence" label={{ value: 'Confidence Index', position: 'bottom', fontSize: 10, offset: 0, fontWeight: 900 }} axisLine={false} tickLine={false} />
-                        <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Bar dataKey="accuracy" radius={[12, 12, 0, 0]} barSize={40}>
-                          {data?.confidenceVsAccuracy.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.accuracy > 70 ? 'hsl(var(--primary))' : 'hsl(var(--accent))'} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  {overconfidenceScore > 10 ? (
-                    <div className="mt-8 rounded-2xl bg-orange-500/10 p-6 border border-orange-500/20">
-                      <div className="flex items-center gap-3 font-black text-orange-500 text-xs uppercase tracking-widest mb-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        Risk: Metacognitive Drift
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Your confidence baseline exceeds your actual accuracy precision by {overconfidenceScore}%. This indicative of 19 CFR legal blindspots. Reduce study velocity to improve nuance detection.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-8 rounded-2xl bg-emerald-500/10 p-6 border border-emerald-500/20">
-                      <div className="flex items-center gap-3 font-black text-emerald-500 text-xs uppercase tracking-widest mb-2">
-                        <Check className="h-4 w-4" />
-                        Precision Calibrated
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Your self-assessment index is perfectly aligned with actual performance. High metacognitive awareness detected—this is a primary indicator of first-time pass success.
-                      </p>
-                    </div>
-                  )}
-                </Card>
-
-                <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] p-8">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <CardTitle className="text-sm font-black uppercase tracking-widest">Mastery Optimization</CardTitle>
-                      <CardDescription>Strategic delta analysis</CardDescription>
-                    </div>
-                    <Target className="h-6 w-6 text-primary opacity-20" />
-                  </div>
-                  <div className="space-y-10">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Max Mastery Portfolio</span>
-                        <span className="text-2xl font-black">{strongestDomain?.accuracy}%</span>
-                      </div>
-                      <Progress value={strongestDomain?.accuracy} className="h-4 rounded-full bg-emerald-500/10" />
-                      <p className="text-xs font-bold text-muted-foreground truncate">{strongestDomain?.name}</p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Friction Points</span>
-                        <span className="text-2xl font-black">{weakestDomain?.accuracy}%</span>
-                      </div>
-                      <Progress value={weakestDomain?.accuracy} className="h-4 rounded-full bg-orange-500/10" />
-                      <p className="text-xs font-bold text-muted-foreground truncate">{weakestDomain?.name}</p>
-                    </div>
-
-                    <div className="mt-6 p-1 rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-indigo-600 shadow-xl">
-                      <div className="bg-black/20 backdrop-blur-sm rounded-[1.3rem] p-6 text-white h-full relative overflow-hidden group">
+                    <div className="p-1 rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-indigo-600 shadow-xl h-full">
+                      <div className="bg-black/20 backdrop-blur-sm rounded-[1.3rem] p-6 text-white h-full relative overflow-hidden group flex flex-col justify-center">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                           <Target className="h-32 w-32 -mr-10 -mt-10 rotate-12" />
                         </div>
@@ -543,7 +495,7 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
                       </div>
                     </div>
                   </div>
-                </Card>
+                </div>
               </div>
             </>
           )}
