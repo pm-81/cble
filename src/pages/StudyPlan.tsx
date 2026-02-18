@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CalendarDays, Clock, Target, BookOpen, Sparkles, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Clock, Target, BookOpen, Sparkles, Loader2, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format, addDays, differenceInDays, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isBefore, isAfter, isSameDay } from 'date-fns';
 
@@ -202,8 +202,8 @@ export default function StudyPlan() {
                                 <Card
                                     key={day.date.toISOString()}
                                     className={`relative border-none overflow-hidden transition-all duration-300 group ${active ? 'bg-primary shadow-glow-primary scale-[1.02] z-10' :
-                                            past ? 'opacity-40 grayscale-[0.5] bg-muted/30' :
-                                                'bg-card shadow-xl hover:bg-muted/10'
+                                        past ? 'opacity-40 grayscale-[0.5] bg-muted/30' :
+                                            'bg-card shadow-xl hover:bg-muted/10'
                                         }`}
                                 >
                                     <CardContent className="p-0">

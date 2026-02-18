@@ -1,0 +1,5 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="40" fill="#6366F1"/>
+  <path d="M60 60H132V132H60V60Z" fill="white" fill-opacity="0.2"/>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="40">CBLE</text>
+</svg>
