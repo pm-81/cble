@@ -198,83 +198,84 @@ export function ExamReadinessScore({ userId }: ExamReadinessScoreProps) {
     };
 
     return (
-        <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 dark:from-primary/10 dark:to-accent/10">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+        <Card className="overflow-hidden border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] ring-1 ring-white/5 relative h-full">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+
+            <CardHeader className="p-8 border-b border-white/5 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 shadow-glow-primary/20">
                         <Award className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <CardTitle className="text-lg">Exam Readiness Score</CardTitle>
-                        <CardDescription>Based on your study progress</CardDescription>
+                        <CardTitle className="text-sm font-black uppercase tracking-widest">Readiness Score</CardTitle>
+                        <CardDescription className="text-xs">Based on your study progress</CardDescription>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="pt-6">
+
+            <CardContent className="p-8 relative z-10">
                 {/* Main Score */}
-                <div className="text-center mb-6">
-                    <div className={`text-6xl font-black ${getScoreColor(data.overallScore)}`}>
-                        {data.overallScore}%
+                <div className="text-center mb-10">
+                    <div className="relative inline-block">
+                        <div className={`text-7xl font-black bg-clip-text text-transparent bg-gradient-to-b ${data.overallScore >= 80 ? 'from-emerald-400 to-emerald-600' :
+                                data.overallScore >= 60 ? 'from-amber-400 to-amber-600' :
+                                    'from-red-400 to-red-600'
+                            }`}>
+                            {data.overallScore}%
+                        </div>
                     </div>
-                    <p className="text-muted-foreground mt-1">{getScoreLabel(data.overallScore)}</p>
+
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">{getScoreLabel(data.overallScore)}</p>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-                    <div>
-                        <p className="text-2xl font-bold">{data.totalAttempts}</p>
-                        <p className="text-xs text-muted-foreground">Questions</p>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{data.studyDays}</p>
-                        <p className="text-xs text-muted-foreground">Study Days</p>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{data.streakDays}</p>
-                        <p className="text-xs text-muted-foreground">Day Streak</p>
-                    </div>
-                </div>
-
-                {/* Domain Breakdown */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        Domain Mastery
-                    </h4>
-                    {data.domainScores.map((domain) => (
-                        <div key={domain.domainId} className="space-y-1">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="truncate flex-1 mr-2">{domain.domainName}</span>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className={`text-xs ${getStatusColor(domain.status)}`}>
-                                        {domain.status === 'not_started' ? 'Not started' : `${domain.accuracy}%`}
-                                    </Badge>
-                                </div>
-                            </div>
-                            <Progress
-                                value={domain.status === 'not_started' ? 0 : domain.accuracy}
-                                className="h-1.5"
-                            />
+                <div className="grid grid-cols-3 gap-2 mb-10">
+                    {[
+                        { label: 'Questions', value: data.totalAttempts },
+                        { label: 'Study Days', value: data.studyDays },
+                        { label: 'Day Streak', value: data.streakDays }
+                    ].map((stat, i) => (
+                        <div key={i} className="text-center p-3 rounded-2xl bg-white/5 border border-white/5">
+                            <p className="text-xl font-black">{stat.value}</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{stat.label}</p>
                         </div>
                     ))}
                 </div>
 
-                {/* Insights */}
-                {(data.weakestDomain || data.strongestDomain) && (
-                    <div className="mt-6 space-y-2">
-                        {data.strongestDomain && (
-                            <div className="flex items-center gap-2 text-sm text-success">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span>Strongest: {data.strongestDomain}</span>
-                            </div>
-                        )}
-                        {data.weakestDomain && (
-                            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                                <AlertTriangle className="h-4 w-4" />
-                                <span>Focus on: {data.weakestDomain}</span>
-                            </div>
-                        )}
+                {/* Domain Breakdown */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <TrendingUp className="h-3 w-3" />
+                            Domain Mastery
+                        </h4>
                     </div>
-                )}
+
+                    <div className="space-y-4">
+                        {data.domainScores.map((domain) => (
+                            <div key={domain.domainId} className="group">
+                                <div className="flex items-center justify-between text-xs mb-1.5">
+                                    <span className="font-bold truncate max-w-[160px]">{domain.domainName}</span>
+                                    <span className={`font-black ${domain.accuracy >= 80 ? 'text-emerald-500' :
+                                            domain.accuracy >= 60 ? 'text-amber-500' :
+                                                'text-muted-foreground'
+                                        }`}>
+                                        {domain.status === 'not_started' ? '--' : `${domain.accuracy}%`}
+                                    </span>
+                                </div>
+                                <div className="h-1.5 w-full bg-muted/20 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-1000 ${domain.accuracy >= 80 ? 'bg-emerald-500 shadow-glow-emerald' :
+                                                domain.accuracy >= 60 ? 'bg-amber-500 shadow-glow-amber' :
+                                                    'bg-muted-foreground/30'
+                                            }`}
+                                        style={{ width: `${domain.status === 'not_started' ? 0 : domain.accuracy}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );

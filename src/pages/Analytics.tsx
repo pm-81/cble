@@ -264,15 +264,15 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
             <div className="space-y-4 text-center md:text-left">
               <Badge
                 variant="outline"
-                className="px-6 py-2 bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-sm"
+                className="px-6 py-2 bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-sm shadow-glow-primary/20"
               >
                 Insight Engine v2.0
               </Badge>
-              <h1 className="font-display text-5xl md:text-6xl font-black tracking-tighter">
+              <h1 className="font-display text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/90 to-primary/50">
                 Performance <span className="text-primary italic">Intelligence</span>
               </h1>
-              <p className="text-muted-foreground text-lg max-w-xl leading-relaxed">
-                Aggregated mastery metrics parsed from your <strong>{data?.totalAttempts}</strong> simulated CBLE attempts.
+              <p className="text-muted-foreground text-lg max-w-xl leading-relaxed font-medium">
+                Aggregated mastery metrics parsed from your <strong className="text-foreground">{data?.totalAttempts}</strong> simulated CBLE attempts.
               </p>
             </div>
             <div className="flex items-center justify-center gap-4">
@@ -318,17 +318,20 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
 
                 <div className="lg:col-span-8 grid gap-4 grid-cols-2 sm:grid-cols-4">
                   {[
-                    { label: 'Precision Rate', value: `${accuracyRate}%`, icon: Target, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'Attempts', value: data?.totalAttempts, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                    { label: 'Verified', value: data?.correctAttempts, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                    { label: 'Cognition', value: `${overconfidenceScore > 0 ? '+' : ''}${overconfidenceScore}%`, icon: AlertTriangle, color: overconfidenceScore > 10 ? 'text-orange-500' : 'text-slate-500', bg: overconfidenceScore > 10 ? 'bg-orange-500/10' : 'bg-slate-500/10' },
+                    { label: 'Precision Rate', value: `${accuracyRate}%`, icon: Target, color: 'text-primary', bg: 'bg-primary/10', gradient: 'from-primary/20 to-primary/5' },
+                    { label: 'Attempts', value: data?.totalAttempts, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-500/5' },
+                    { label: 'Verified', value: data?.correctAttempts, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-500/10', gradient: 'from-emerald-500/20 to-emerald-500/5' },
+                    { label: 'Cognition', value: `${overconfidenceScore > 0 ? '+' : ''}${overconfidenceScore}%`, icon: AlertTriangle, color: overconfidenceScore > 10 ? 'text-orange-500' : 'text-slate-500', bg: overconfidenceScore > 10 ? 'bg-orange-500/10' : 'bg-slate-500/10', gradient: overconfidenceScore > 10 ? 'from-orange-500/20 to-orange-500/5' : 'from-slate-500/20 to-slate-500/5' },
                   ].map((stat, i) => (
-                    <Card key={i} className="border-none shadow-xl bg-card/40 backdrop-blur-sm p-6 hover:bg-card transition-colors group">
-                      <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <Card key={i} className={`relative overflow-hidden border-white/5 shadow-2xl bg-gradient-to-br ${stat.gradient} backdrop-blur-xl p-6 hover:translate-y--1 transition-all duration-300 group`}>
+                      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <stat.icon className="h-24 w-24 -mr-8 -mt-8 rotate-12" />
+                      </div>
+                      <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4 shadow-inner ring-1 ring-white/10`}>
                         <stat.icon className="h-5 w-5" />
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 mb-1">{stat.label}</p>
-                      <p className="text-3xl font-black tracking-tight">{stat.value}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1 z-10 relative">{stat.label}</p>
+                      <p className="text-3xl font-black tracking-tight z-10 relative">{stat.value}</p>
                     </Card>
                   ))}
 
@@ -389,38 +392,40 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
                 </Card>
 
                 {/* Progress Trend Environment */}
-                <Card className="lg:col-span-2 border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                  <CardHeader className="p-8 border-b border-border/10 flex flex-row items-center justify-between">
+                <Card className="lg:col-span-2 border-none shadow-3xl bg-card/60 backdrop-blur-xl rounded-[2.5rem] overflow-hidden ring-1 ring-white/5 relative">
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                  <CardHeader className="p-8 border-b border-white/5 flex flex-row items-center justify-between relative z-10">
                     <div>
-                      <CardTitle className="text-sm font-black uppercase tracking-widest">Velocity Timeline</CardTitle>
-                      <CardDescription>Question volume vs implementation accuracy</CardDescription>
+                      <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-primary/80">Velocity Timeline</CardTitle>
+                      <CardDescription className="font-medium">Question volume vs implementation accuracy</CardDescription>
                     </div>
                     <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-muted" /> Volume</div>
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary" /> Accuracy</div>
+                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-muted shadow-sm" /> Volume</div>
+                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary shadow-glow-primary" /> Accuracy</div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-8">
+                  <CardContent className="p-8 relative z-10">
                     <div className="h-[340px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={data?.recentTrend}>
                           <defs>
                             <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
                               <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.2} />
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.1} />
                           <XAxis
                             dataKey="date"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fontSize: 10, fontWeight: 800, fill: 'hsl(var(--muted-foreground))', dy: 10 }}
                           />
-                          <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} />
-                          <YAxis yAxisId="right" orientation="right" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} />
+                          <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }} />
+                          <YAxis yAxisId="right" orientation="right" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--primary))' }} />
                           <Tooltip
-                            contentStyle={{ borderRadius: '1.5rem', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)' }}
+                            contentStyle={{ borderRadius: '1rem', backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 20px 40px -10px rgb(0 0 0 / 0.3)' }}
+                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '5 5', strokeOpacity: 0.5 }}
                           />
                           <Bar
                             yAxisId="left"
@@ -428,6 +433,7 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
                             fill="hsl(var(--muted))"
                             radius={[8, 8, 0, 0]}
                             barSize={32}
+                            fillOpacity={0.3}
                             name="Telemetric Volume"
                           />
                           <Area
@@ -522,14 +528,19 @@ Join me on CBLETest — The path to Customs Broker licensure!`;
                       <p className="text-xs font-bold text-muted-foreground truncate">{weakestDomain?.name}</p>
                     </div>
 
-                    <div className="mt-6 p-6 rounded-3xl bg-primary shadow-glow-primary text-white">
-                      <h4 className="font-black text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <Zap className="h-4 w-4 fill-white" />
-                        Next Strategic Phase
-                      </h4>
-                      <p className="text-sm font-medium leading-relaxed opacity-90">
-                        The engine recommends immediate interleaved practice targeting <span className="font-black underline">{weakestDomain?.shorthand}</span>. Rectifying this delta will raise your overall Exam Readiness score by an estimated 4-6 points.
-                      </p>
+                    <div className="mt-6 p-1 rounded-3xl bg-gradient-to-br from-primary via-violet-600 to-indigo-600 shadow-xl">
+                      <div className="bg-black/20 backdrop-blur-sm rounded-[1.3rem] p-6 text-white h-full relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <Target className="h-32 w-32 -mr-10 -mt-10 rotate-12" />
+                        </div>
+                        <h4 className="font-black text-xs uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
+                          <Zap className="h-4 w-4 fill-white animate-pulse" />
+                          Next Strategic Phase
+                        </h4>
+                        <p className="text-sm font-medium leading-relaxed opacity-90 relative z-10">
+                          The engine recommends immediate interleaved practice targeting <span className="font-black underline decoration-2 decoration-white/50 underline-offset-4">{weakestDomain?.shorthand}</span>. Rectifying this delta will raise your overall Exam Readiness score by an estimated 4-6 points.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Card>
